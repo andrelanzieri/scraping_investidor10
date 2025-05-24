@@ -1,4 +1,4 @@
-te#!/usr/bin/env python3
+#!/usr/bin/env python3
 """
 Script para criar executável do Extrator de Dados - Investidor10
 Versão 2.0 - Janeiro 2025

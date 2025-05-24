@@ -70,5 +70,4 @@ release/
 # PyInstaller
 *.manifest
 *.spec.bak
-.github/workflows/build-release.yml
 hooks/hook-webdriver_manager.py
