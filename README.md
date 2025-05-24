@@ -6,6 +6,9 @@
 
 > Ferramenta automatizada para extrair dados de ações do site Investidor10 com interface gráfica moderna e arquitetura modular.
 
+Baixe executável em:
+<https://github.com/andrelanzieri/scraping_investidor10/releases>
+
 ## 📋 Índice
 
 - [Características](#-características)
