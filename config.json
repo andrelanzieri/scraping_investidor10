@@ -1,0 +1,275 @@
+{
+    "acoes": [
+        "CPFE3",
+        "ITUB4",
+        "BRBI11",
+        "BBDC3",
+        "EGIE3",
+        "AURE3",
+        "PSSA3",
+        "BBSE3",
+        "SAPR11",
+        "FESA4",
+        "VALE3",
+        "CMIN3",
+        "RANI3",
+        "BBAS3",
+        "TAEE11",
+        "CSMG3"
+    ],
+    "colunas_personalizadas": [
+        {
+            "nome": "Nome",
+            "tipo": "avancado",
+            "classe_busca": "",
+            "classe_retorno": "",
+            "seletor_css": ".name-company",
+            "formato_excel": "Texto"
+        },
+        {
+            "nome": "Setor",
+            "tipo": "avancado",
+            "classe_busca": "",
+            "classe_retorno": "",
+            "seletor_css": "#table-indicators-company > div:nth-child(14) > a:nth-child(1) > span:nth-child(2)",
+            "formato_excel": "Texto"
+        },
+        {
+            "nome": "Segmento",
+            "tipo": "avancado",
+            "classe_busca": "",
+            "classe_retorno": "",
+            "seletor_css": "#table-indicators-company > div:nth-child(15) > a:nth-child(1) > span:nth-child(2)",
+            "formato_excel": "Texto"
+        },
+        {
+            "nome": "Rentabiliade 1 mes",
+            "tipo": "avancado",
+            "classe_busca": "",
+            "classe_retorno": "",
+            "seletor_css": "div.result-period:nth-child(2) > span:nth-child(1)",
+            "formato_excel": "Porcentagem"
+        },
+        {
+            "nome": "Rentabilidade 3 meses",
+            "tipo": "avancado",
+            "classe_busca": "",
+            "classe_retorno": "",
+            "seletor_css": "div.result-period:nth-child(3) > span:nth-child(1)",
+            "formato_excel": "Porcentagem"
+        },
+        {
+            "nome": "Rentabilidade 1 ano",
+            "tipo": "avancado",
+            "classe_busca": "",
+            "classe_retorno": "",
+            "seletor_css": "div.result-period:nth-child(4) > span:nth-child(1)",
+            "formato_excel": "Porcentagem"
+        },
+        {
+            "nome": "Rentabilidade 2 anos",
+            "tipo": "avancado",
+            "classe_busca": "",
+            "classe_retorno": "",
+            "seletor_css": "div.result-period:nth-child(5) > span:nth-child(1)",
+            "formato_excel": "Porcentagem"
+        },
+        {
+            "nome": "Rentabilidade 5 anos",
+            "tipo": "avancado",
+            "classe_busca": "",
+            "classe_retorno": "",
+            "seletor_css": "div.result-period:nth-child(6) > span:nth-child(1)",
+            "formato_excel": "Porcentagem"
+        },
+        {
+            "nome": "Cotação",
+            "tipo": "avancado",
+            "classe_busca": "",
+            "classe_retorno": "",
+            "seletor_css": "span.value:nth-child(1)",
+            "formato_excel": "Moeda"
+        },
+        {
+            "nome": "Preco Justo Graham",
+            "tipo": "avancado",
+            "classe_busca": "",
+            "classe_retorno": "",
+            "seletor_css": "div.especial:nth-child(1) > div:nth-child(2) > div:nth-child(2) > div:nth-child(1) > div:nth-child(2) > span:nth-child(2)",
+            "formato_excel": "Moeda"
+        },
+        {
+            "nome": "Upside Graham",
+            "tipo": "avancado",
+            "classe_busca": "",
+            "classe_retorno": "",
+            "seletor_css": "div.especial:nth-child(1) > div:nth-child(2) > div:nth-child(2) > div:nth-child(1) > div:nth-child(3) > span:nth-child(2) > span:nth-child(1)",
+            "formato_excel": "Porcentagem"
+        },
+        {
+            "nome": "Preço Teto Bazin(dividendos)",
+            "tipo": "avancado",
+            "classe_busca": "",
+            "classe_retorno": "",
+            "seletor_css": "div.sub-especial:nth-child(1) > div:nth-child(2) > div:nth-child(2) > div:nth-child(1) > div:nth-child(2) > span:nth-child(2)",
+            "formato_excel": "Moeda"
+        },
+        {
+            "nome": "Upside Bazin",
+            "tipo": "avancado",
+            "classe_busca": "",
+            "classe_retorno": "",
+            "seletor_css": "div.sub-especial:nth-child(1) > div:nth-child(2) > div:nth-child(2) > div:nth-child(1) > div:nth-child(3) > span:nth-child(2) > span:nth-child(1)",
+            "formato_excel": "Porcentagem"
+        },
+        {
+            "nome": "DY ATUAL",
+            "tipo": "avancado",
+            "classe_busca": "",
+            "classe_retorno": "",
+            "seletor_css": "#table-indicators-history > tbody:nth-child(1) > tr:nth-child(5) > td:nth-child(2)",
+            "formato_excel": "Porcentagem"
+        },
+        {
+            "nome": "DY 2024",
+            "tipo": "avancado",
+            "classe_busca": "",
+            "classe_retorno": "",
+            "seletor_css": "#table-indicators-history > tbody:nth-child(1) > tr:nth-child(5) > td:nth-child(3)",
+            "formato_excel": "Porcentagem"
+        },
+        {
+            "nome": "DY 2023",
+            "tipo": "avancado",
+            "classe_busca": "",
+            "classe_retorno": "",
+            "seletor_css": "#table-indicators-history > tbody:nth-child(1) > tr:nth-child(5) > td:nth-child(4)",
+            "formato_excel": "Porcentagem"
+        },
+        {
+            "nome": "DY 2022",
+            "tipo": "avancado",
+            "classe_busca": "",
+            "classe_retorno": "",
+            "seletor_css": "#table-indicators-history > tbody:nth-child(1) > tr:nth-child(5) > td:nth-child(5)",
+            "formato_excel": "Porcentagem"
+        },
+        {
+            "nome": "DY 2021",
+            "tipo": "avancado",
+            "classe_busca": "",
+            "classe_retorno": "",
+            "seletor_css": "#table-indicators-history > tbody:nth-child(1) > tr:nth-child(5) > td:nth-child(6)",
+            "formato_excel": "Porcentagem"
+        },
+        {
+            "nome": "DY 2020",
+            "tipo": "avancado",
+            "classe_busca": "",
+            "classe_retorno": "",
+            "seletor_css": "#table-indicators-history > tbody:nth-child(1) > tr:nth-child(5) > td:nth-child(7)",
+            "formato_excel": "Porcentagem"
+        },
+        {
+            "nome": "P/VP Atual",
+            "tipo": "avancado",
+            "classe_busca": "",
+            "classe_retorno": "",
+            "seletor_css": "#table-indicators-history > tbody:nth-child(1) > tr:nth-child(4) > td:nth-child(2)",
+            "formato_excel": "Número"
+        },
+        {
+            "nome": "P/VP 2024",
+            "tipo": "avancado",
+            "classe_busca": "",
+            "classe_retorno": "",
+            "seletor_css": "#table-indicators-history > tbody:nth-child(1) > tr:nth-child(4) > td:nth-child(3)",
+            "formato_excel": "Número"
+        },
+        {
+            "nome": "P/VP 2023",
+            "tipo": "avancado",
+            "classe_busca": "",
+            "classe_retorno": "",
+            "seletor_css": "#table-indicators-history > tbody:nth-child(1) > tr:nth-child(4) > td:nth-child(4)",
+            "formato_excel": "Número"
+        },
+        {
+            "nome": "P/VP 2022",
+            "tipo": "avancado",
+            "classe_busca": "",
+            "classe_retorno": "",
+            "seletor_css": "#table-indicators-history > tbody:nth-child(1) > tr:nth-child(4) > td:nth-child(5)",
+            "formato_excel": "Número"
+        },
+        {
+            "nome": "P/VP 2021",
+            "tipo": "avancado",
+            "classe_busca": "",
+            "classe_retorno": "",
+            "seletor_css": "#table-indicators-history > tbody:nth-child(1) > tr:nth-child(4) > td:nth-child(6)",
+            "formato_excel": "Número"
+        },
+        {
+            "nome": "P/VP 2020",
+            "tipo": "avancado",
+            "classe_busca": "",
+            "classe_retorno": "",
+            "seletor_css": "#table-indicators-history > tbody:nth-child(1) > tr:nth-child(4) > td:nth-child(7)",
+            "formato_excel": "Número"
+        },
+        {
+            "nome": "Div. Liq. EBITDA ATUAL",
+            "tipo": "avancado",
+            "classe_busca": "",
+            "classe_retorno": "",
+            "seletor_css": "tr.visible-even:nth-child(24) > td:nth-child(2)",
+            "formato_excel": "Número"
+        },
+        {
+            "nome": "Div. Liq. EBITDA 2024",
+            "tipo": "avancado",
+            "classe_busca": "",
+            "classe_retorno": "",
+            "seletor_css": "tr.visible-even:nth-child(24) > td:nth-child(3)",
+            "formato_excel": "Número"
+        },
+        {
+            "nome": "Div. Liq. EBITDA 2023",
+            "tipo": "avancado",
+            "classe_busca": "",
+            "classe_retorno": "",
+            "seletor_css": "tr.visible-even:nth-child(24) > td:nth-child(4)",
+            "formato_excel": "Número"
+        },
+        {
+            "nome": "Div. Liq. EBITDA 2022",
+            "tipo": "avancado",
+            "classe_busca": "",
+            "classe_retorno": "",
+            "seletor_css": "tr.visible-even:nth-child(24) > td:nth-child(5)",
+            "formato_excel": "Número"
+        },
+        {
+            "nome": "Div. Liq. EBITDA 2021",
+            "tipo": "avancado",
+            "classe_busca": "",
+            "classe_retorno": "",
+            "seletor_css": "tr.visible-even:nth-child(24) > td:nth-child(6)",
+            "formato_excel": "Número"
+        },
+        {
+            "nome": "Div. Liq. EBITDA 2020",
+            "tipo": "avancado",
+            "classe_busca": "",
+            "classe_retorno": "",
+            "seletor_css": "tr.visible-even:nth-child(24) > td:nth-child(7)",
+            "formato_excel": "Número"
+        }
+    ],
+    "headless": true,
+    "detach": false,
+    "minimizar": false,
+    "tema": "escuro",
+    "max_workers": 10
+}

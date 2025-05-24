@@ -1,0 +1,24 @@
+# Dependências principais para o Extrator de Dados - Investidor10
+# Versão 2.0 - Atualizado em Janeiro 2025
+
+# Selenium - Automação de navegador web
+selenium==4.33.0
+
+# Pandas - Manipulação e análise de dados
+pandas==2.2.3
+
+# OpenPyXL - Leitura e escrita de arquivos Excel
+openpyxl==3.1.5
+
+# WebDriver Manager - Gerenciamento automático de drivers
+webdriver-manager==4.0.2
+
+# Dependências adicionais recomendadas
+# Requests - Para requisições HTTP (caso necessário)
+requests>=2.31.0
+
+# Lxml - Parser XML/HTML mais rápido para pandas
+lxml>=4.9.0
+
+# Pillow - Processamento de imagens (caso necessário para capturas de tela)
+Pillow>=10.0.0
