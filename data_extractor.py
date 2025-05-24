@@ -95,7 +95,7 @@ class DataExtractor:
         chrome_options.add_experimental_option("prefs", {
             "profile.default_content_setting_values.notifications": 2,
             "profile.default_content_settings.popups": 0,
-            "profile.managed_default_content_settings.images": 2,  # Bloqueia imagens para performance
+            "profile.managed_default_content_settings.images": 1,  # Permite imagens (1 = permitir, 2 = bloquear)
         })
 
         # Configuração do perfil
