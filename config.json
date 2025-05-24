@@ -268,8 +268,5 @@
         }
     ],
     "headless": true,
-    "detach": false,
-    "minimizar": false,
-    "tema": "escuro",
-    "max_workers": 10
+    "tema": "escuro"
 }

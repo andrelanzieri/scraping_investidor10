@@ -3,7 +3,6 @@ import tkinter as tk
 from tkinter import ttk, messagebox, filedialog
 import pandas as pd
 import os
-import subprocess
 from tkinter import font as tkfont
 import threading
 import time
@@ -258,8 +257,6 @@ class InvestidorApp:
             "acoes": [],
             "colunas_personalizadas": [],
             "headless": False,
-            "detach": False,
-            "minimizar": False,
             "tema": "escuro"
         }
         try:
@@ -300,9 +297,6 @@ class InvestidorApp:
 
         if final_config.get("tema") not in ["claro", "escuro"]:
             final_config["tema"] = "escuro"
-
-        final_config["detach"] = False
-        final_config["minimizar"] = False
 
         self.tema_escuro = final_config["tema"] == "escuro"
         self.aplicar_tema()
@@ -723,8 +717,6 @@ class InvestidorApp:
             # Se estamos em uma thread secundária, usar after para thread safety
             self.root.after(0, _atualizar)
 
-        print(mensagem)
-
     def cancelar_extracao_atual(self):
         """Cancela a extração de dados em andamento."""
         if self.extracao_em_andamento:
@@ -751,20 +743,19 @@ class InvestidorApp:
     def adicionar_acao(self):
         """Adiciona uma nova ação à lista de ações e à interface."""
         acao = self.entry_acao.get().strip().upper()
+        self.entry_acao.delete(0, tk.END)
+
         if not acao:
             messagebox.showwarning("Aviso", "O nome da ação não pode ser vazio.")
-            self.entry_acao.delete(0, tk.END)
             return
 
         if acao not in self.config["acoes"]:
             self.config["acoes"].append(acao)
             self.listbox_acoes.insert(tk.END, acao)
-            self.entry_acao.delete(0, tk.END)
             self.atualizar_contador_acoes()
             self.atualizar_status(f"Ação {acao} adicionada com sucesso!", 100)
         else:
             messagebox.showinfo("Informação", f"A ação '{acao}' já existe na lista.")
-            self.entry_acao.delete(0, tk.END)
 
     def remover_acao(self):
         """Remove a ação selecionada da lista de ações e da configuração."""
@@ -935,7 +926,6 @@ class InvestidorApp:
             self.root.after(0, self.habilitar_atalhos)
             # Restaurar ícone de status
             self.root.after(0, lambda: self.lbl_icone_status.config(text="ℹ️"))
-            self.root.after(0, self.root.deiconify)
 
     def _process_and_export_data(self, data_acoes_list, data_carteiras_list):
         """

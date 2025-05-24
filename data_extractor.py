@@ -1,5 +1,4 @@
 import json
-import tkinter as tk
 from tkinter import messagebox, filedialog
 from selenium import webdriver
 from selenium.webdriver.chrome.service import Service
@@ -13,7 +12,6 @@ import os
 import re
 import subprocess
 import threading
-import time
 
 
 class DataExtractor:
@@ -142,11 +140,6 @@ class DataExtractor:
 
         try:
             self.status_callback("Acessando página de carteiras...", 70)
-
-            if self.verificar_cancelamento():
-                self.status_callback("Extração de carteiras cancelada pelo usuário.", 0)
-                return []
-
             self.driver.get("https://investidor10.com.br/carteiras/resumo/")
 
             if self.verificar_cancelamento():
