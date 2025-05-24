@@ -38,7 +38,7 @@ Baixe executável em:
 
 ![Interface Principal](screenshots/interface_principal.png)
 
-*Interface principal da aplicação com tema claro, mostrando a lista de ações configuradas e botões de ação.*
+*Interface principal da aplicação com tema escuro, mostrando a lista de ações configuradas e botões de ação.*
 
 ### Configuração de Ações
 
