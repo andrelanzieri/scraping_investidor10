@@ -55,3 +55,20 @@ test_*.py
 *.secret
 *.private
 chromedriver.exe
+
+# Build e Release
+build/
+dist/
+release/
+*.spec
+!build_exe.spec
+*.zip
+*.tar.gz
+*.exe
+!ExtractorInvestidor10.exe
+
+# PyInstaller
+*.manifest
+*.spec.bak
+.github/workflows/build-release.yml
+hooks/hook-webdriver_manager.py

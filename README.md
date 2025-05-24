@@ -2,7 +2,7 @@
 
 [![Python](https://img.shields.io/badge/Python-3.6+-blue.svg)](https://www.python.org/downloads/)
 [![License](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
-[![Selenium](https://img.shields.io/badge/Selenium-4.10.0-yellow.svg)](https://selenium-python.readthedocs.io/)
+[![Selenium](https://img.shields.io/badge/Selenium-4.33.0-yellow.svg)](https://selenium-python.readthedocs.io/)
 
 > Ferramenta automatizada para extrair dados de ações do site Investidor10 com interface gráfica moderna e arquitetura modular.
 
@@ -23,9 +23,11 @@
 - 🔄 **Extração Automatizada**: Coleta dados de ações individuais e carteiras recomendadas
 - 🎨 **Interface Moderna**: GUI com temas claro/escuro e design responsivo
 - ⚙️ **Configurações Flexíveis**: Colunas personalizadas e configurações persistentes
-- 📊 **Exportação Excel**: Relatórios formatados com dados estruturados
+- 📊 **Exportação Excel**: Relatórios formatados com dados estruturados (xlsxwriter)
 - 🚫 **Sistema de Cancelamento**: Interrupção segura de extrações em andamento
 - 🔧 **Arquitetura Modular**: Código organizado e de fácil manutenção
+- 🛡️ **Extração Robusta**: Sistema de múltiplas tentativas e fallbacks
+- 📦 **Executável Standalone**: Todas as dependências incluídas (~52MB)
 
 ## 📸 Screenshots
 
@@ -123,6 +125,7 @@ A aplicação foi completamente refatorada para uma arquitetura modular com sepa
 | `selenium` | 4.33.0 | Automação do navegador web |
 | `pandas` | 2.2.3 | Manipulação e análise de dados |
 | `openpyxl` | 3.1.5 | Leitura/escrita de arquivos Excel |
+| `xlsxwriter` | ≥3.0.0 | Engine para escrita de Excel com formatação |
 | `webdriver-manager` | 4.0.2 | Gerenciamento automático do ChromeDriver |
 | `requests` | ≥2.31.0 | Requisições HTTP (dependência adicional) |
 | `lxml` | ≥4.9.0 | Parser XML/HTML mais rápido para pandas |

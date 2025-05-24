@@ -10,6 +10,9 @@ pandas==2.2.3
 # OpenPyXL - Leitura e escrita de arquivos Excel
 openpyxl==3.1.5
 
+# XlsxWriter - Engine para escrita de arquivos Excel com formatação
+xlsxwriter>=3.0.0
+
 # WebDriver Manager - Gerenciamento automático de drivers
 webdriver-manager==4.0.2
 

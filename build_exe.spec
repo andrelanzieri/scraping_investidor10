@@ -1,0 +1,167 @@
+# -*- mode: python ; coding: utf-8 -*-
+
+block_cipher = None
+
+a = Analysis(
+    ['main.py'],
+    pathex=[],
+    binaries=[],
+    datas=[
+        ('config.json', '.'),
+        ('screenshots', 'screenshots'),
+    ],
+    hiddenimports=[
+        # Selenium e WebDriver Manager
+        'selenium',
+        'selenium.webdriver',
+        'selenium.webdriver.chrome',
+        'selenium.webdriver.chrome.service',
+        'selenium.webdriver.chrome.options',
+        'selenium.webdriver.common.by',
+        'selenium.webdriver.support.ui',
+        'selenium.webdriver.support.expected_conditions',
+        'selenium.common.exceptions',
+        'webdriver_manager',
+        'webdriver_manager.chrome',
+        'webdriver_manager.core',
+        'webdriver_manager.core.utils',
+        'webdriver_manager.core.download_manager',
+        'webdriver_manager.core.driver_cache',
+        'webdriver_manager.core.config_manager',
+        'webdriver_manager.core.logger',
+        'webdriver_manager.core.os_manager',
+        'webdriver_manager.drivers',
+        'webdriver_manager.drivers.chrome',
+        'webdriver_manager.microsoft',
+        'webdriver_manager.firefox',
+        'webdriver_manager.opera',
+
+        # Pandas e dependências
+        'pandas',
+        'pandas.io',
+        'pandas.io.excel',
+        'pandas.io.formats',
+        'pandas.io.formats.excel',
+        'openpyxl',
+        'openpyxl.workbook',
+        'openpyxl.worksheet',
+        'openpyxl.styles',
+        'openpyxl.utils',
+
+        # XlsxWriter e dependências
+        'xlsxwriter',
+        'xlsxwriter.workbook',
+        'xlsxwriter.worksheet',
+        'xlsxwriter.format',
+        'xlsxwriter.utility',
+        'xlsxwriter.chart',
+        'xlsxwriter.chartsheet',
+        'xlsxwriter.comments',
+        'xlsxwriter.drawing',
+        'xlsxwriter.packager',
+        'xlsxwriter.relationships',
+        'xlsxwriter.shape',
+        'xlsxwriter.sharedstrings',
+        'xlsxwriter.styles',
+        'xlsxwriter.table',
+        'xlsxwriter.theme',
+        'xlsxwriter.vml',
+        'xlsxwriter.xmlwriter',
+
+        # Tkinter
+        'tkinter',
+        'tkinter.ttk',
+        'tkinter.filedialog',
+        'tkinter.messagebox',
+        'tkinter.scrolledtext',
+
+        # Requests e dependências de rede
+        'requests',
+        'requests.adapters',
+        'requests.auth',
+        'requests.cookies',
+        'requests.models',
+        'requests.sessions',
+        'urllib3',
+        'urllib3.util',
+        'urllib3.util.retry',
+        'urllib3.poolmanager',
+
+        # XML/HTML parsing
+        'lxml',
+        'lxml.etree',
+        'lxml.html',
+        'xml',
+        'xml.etree',
+        'xml.etree.ElementTree',
+
+        # Imagens
+        'PIL',
+        'PIL.Image',
+        'PIL.ImageTk',
+
+        # Módulos padrão Python
+        'json',
+        'threading',
+        'queue',
+        'datetime',
+        'time',
+        'os',
+        'sys',
+        'logging',
+        'subprocess',
+        're',
+        'pathlib',
+        'shutil',
+        'tempfile',
+        'zipfile',
+        'configparser',
+        'platform',
+        'socket',
+        'ssl',
+        'http',
+        'http.client',
+        'urllib',
+        'urllib.request',
+        'urllib.parse',
+
+        # Dependências específicas do webdriver-manager
+        'packaging',
+        'packaging.version',
+        'packaging.specifiers',
+        'packaging.requirements',
+    ],
+    hookspath=['hooks'],
+    hooksconfig={},
+    runtime_hooks=[],
+    excludes=[],
+    win_no_prefer_redirects=False,
+    win_private_assemblies=False,
+    cipher=block_cipher,
+    noarchive=False,
+)
+
+pyz = PYZ(a.pure, a.zipped_data, cipher=block_cipher)
+
+exe = EXE(
+    pyz,
+    a.scripts,
+    a.binaries,
+    a.zipfiles,
+    a.datas,
+    [],
+    name='ExtractorInvestidor10',
+    debug=False,
+    bootloader_ignore_signals=False,
+    strip=False,
+    upx=True,
+    upx_exclude=[],
+    runtime_tmpdir=None,
+    console=False,  # False para não mostrar console em aplicações GUI
+    disable_windowed_traceback=False,
+    argv_emulation=False,
+    target_arch=None,
+    codesign_identity=None,
+    entitlements_file=None,
+    icon=None,  # Adicione um ícone .ico aqui se desejar
+)

@@ -12,6 +12,7 @@ import os
 import re
 import subprocess
 import threading
+import time
 
 
 class DataExtractor:
@@ -38,33 +39,104 @@ class DataExtractor:
     def setup_driver(self):
         """Configura e inicia o WebDriver do Chrome."""
         chrome_options = Options()
+
+        # Configurações básicas
         if self.config["headless"]:
             chrome_options.add_argument("--headless")
-        chrome_options.add_argument("--start-maximized")
-        chrome_options.add_experimental_option("detach", False)
+
+        # Argumentos essenciais para executáveis
+        chrome_options.add_argument("--no-sandbox")
+        chrome_options.add_argument("--disable-dev-shm-usage")
+        chrome_options.add_argument("--disable-gpu")
+        chrome_options.add_argument("--disable-software-rasterizer")
+        chrome_options.add_argument("--disable-background-timer-throttling")
+        chrome_options.add_argument("--disable-backgrounding-occluded-windows")
+        chrome_options.add_argument("--disable-renderer-backgrounding")
+        chrome_options.add_argument("--disable-features=TranslateUI")
+        chrome_options.add_argument("--disable-ipc-flooding-protection")
+
+        # Argumentos para estabilidade
+        chrome_options.add_argument("--disable-extensions")
+        chrome_options.add_argument("--disable-plugins")
+        chrome_options.add_argument("--disable-infobars")
+        chrome_options.add_argument("--disable-notifications")
+        chrome_options.add_argument("--disable-popup-blocking")
+        chrome_options.add_argument("--disable-default-apps")
+
+        # Argumentos para performance
+        chrome_options.add_argument("--memory-pressure-off")
+        chrome_options.add_argument("--max_old_space_size=4096")
+        chrome_options.add_argument("--disable-background-networking")
+
+        # Argumentos para compatibilidade com executáveis
+        chrome_options.add_argument("--disable-logging")
+        chrome_options.add_argument("--disable-log-file")
+        chrome_options.add_argument("--log-level=3")
+        chrome_options.add_argument("--silent")
+        chrome_options.add_argument("--disable-crash-reporter")
+        chrome_options.add_argument("--disable-in-process-stack-traces")
+        chrome_options.add_argument("--disable-logging")
+        chrome_options.add_argument("--disable-dev-tools")
+
+        # Configurações de janela
+        if not self.config["headless"]:
+            chrome_options.add_argument("--start-maximized")
+        else:
+            chrome_options.add_argument("--window-size=1920,1080")
+
+        # Anti-detecção
         chrome_options.add_argument("--disable-blink-features=AutomationControlled")
         chrome_options.add_experimental_option("excludeSwitches", ["enable-automation"])
         chrome_options.add_experimental_option('useAutomationExtension', False)
-        chrome_options.add_argument("--disable-extensions")
-        chrome_options.add_argument("--no-sandbox")
-        chrome_options.add_argument("--disable-infobars")
-        chrome_options.add_argument('--disable-gpu')
-        chrome_options.add_argument('--disable-dev-shm-usage')
         chrome_options.add_argument('--user-agent=Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36')
-        chrome_options.add_argument('--enable-unsafe-swiftshader')
-        chrome_options.add_argument('--disk-cache-size=52428800')
-        chrome_options.add_argument('--disable-application-cache=false')
 
+        # Configurações experimentais
+        chrome_options.add_experimental_option("detach", False)
+        chrome_options.add_experimental_option("prefs", {
+            "profile.default_content_setting_values.notifications": 2,
+            "profile.default_content_settings.popups": 0,
+            "profile.managed_default_content_settings.images": 2,  # Bloqueia imagens para performance
+        })
+
+        # Configuração do perfil
         profile_path = os.path.join(os.getcwd(), "chrome_profile")
         if not os.path.exists(profile_path):
             os.makedirs(profile_path)
         chrome_options.add_argument(f"user-data-dir={profile_path}")
 
         self.status_callback("Iniciando navegador...", 10)
-        self.driver = webdriver.Chrome(service=Service(ChromeDriverManager().install()), options=chrome_options)
-        self.driver.execute_script("Object.defineProperty(navigator, 'webdriver', {get: () => undefined})")
-        self.driver.implicitly_wait(5)
-        return self.driver
+
+        try:
+            # Tenta usar ChromeDriverManager com configurações específicas
+            service = Service(ChromeDriverManager().install())
+            service.creation_flags = 0x08000000  # CREATE_NO_WINDOW para executáveis
+
+            self.driver = webdriver.Chrome(service=service, options=chrome_options)
+
+            # Scripts anti-detecção
+            self.driver.execute_script("Object.defineProperty(navigator, 'webdriver', {get: () => undefined})")
+            self.driver.execute_cdp_cmd('Network.setUserAgentOverride', {
+                "userAgent": 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36'
+            })
+            self.driver.execute_script("Object.defineProperty(navigator, 'plugins', {get: () => [1, 2, 3, 4, 5]})")
+            self.driver.execute_script("Object.defineProperty(navigator, 'languages', {get: () => ['en-US', 'en']})")
+
+            self.driver.implicitly_wait(5)
+            return self.driver
+
+        except Exception as e:
+            self.status_callback(f"Erro ao inicializar Chrome: {e}", 0)
+            # Fallback: tenta sem ChromeDriverManager
+            try:
+                self.status_callback("Tentando fallback sem ChromeDriverManager...", 5)
+                service = Service()
+                service.creation_flags = 0x08000000
+                self.driver = webdriver.Chrome(service=service, options=chrome_options)
+                self.driver.execute_script("Object.defineProperty(navigator, 'webdriver', {get: () => undefined})")
+                self.driver.implicitly_wait(5)
+                return self.driver
+            except Exception as e2:
+                raise Exception(f"Falha ao inicializar Chrome. Erro principal: {e}. Erro fallback: {e2}")
 
     def verificar_cancelamento(self):
         """Verifica se o cancelamento foi solicitado."""
@@ -127,6 +199,8 @@ class DataExtractor:
     def extract_portfolio_data(self):
         """
         Realiza a extração de dados para as carteiras configuradas.
+        Implementa múltiplas tentativas e tratamento robusto de erros.
+        Se não conseguir extrair dados, retorna lista vazia sem exibir erros ao usuário.
 
         Returns:
             list: Lista de dicionários, cada um representando os dados de uma carteira.
@@ -137,52 +211,156 @@ class DataExtractor:
 
         self.status_callback("Iniciando extração de dados de CARTEIRAS...", 65)
         dados_carteiras = []
+        max_tentativas = 3
 
-        try:
-            self.status_callback("Acessando página de carteiras...", 70)
-            self.driver.get("https://investidor10.com.br/carteiras/resumo/")
-
-            if self.verificar_cancelamento():
-                self.status_callback("Extração de carteiras cancelada pelo usuário.", 0)
-                return []
-
-            WebDriverWait(self.driver, 20).until(
-                EC.presence_of_element_located((By.CSS_SELECTOR, "#Ticker-tickers_wrapper > div:nth-child(3)"))
-            )
-
-            self.status_callback("Extraindo dados da tabela de carteiras...", 80)
+        for tentativa in range(max_tentativas):
             try:
-                WebDriverWait(self.driver, 10).until(
-                    EC.presence_of_element_located((By.ID, "Ticker-tickers"))
-                )
-                raw_data_carteiras = self.extrair_dados_tabela(id_tabela="Ticker-tickers")
-            except:
-                self.status_callback("Fallback para seletor de tabela de carteiras...", 82)
+                self.status_callback(f"Acessando página de carteiras (tentativa {tentativa + 1}/{max_tentativas})...", 70)
+
+                # Navega para a página com retry
                 try:
-                    tabela_wrapper = self.driver.find_element(By.CSS_SELECTOR, "#Ticker-tickers_wrapper")
-                    WebDriverWait(tabela_wrapper, 10).until(
-                        EC.presence_of_element_located((By.TAG_NAME, "table"))
-                    )
-                    raw_data_carteiras = self.extrair_dados_tabela(seletor_tabela="#Ticker-tickers_wrapper table#Ticker-tickers")
-                    if not raw_data_carteiras:
-                        raw_data_carteiras = self.extrair_dados_tabela(seletor_tabela="#Ticker-tickers_wrapper table")
-                except Exception as e_fallback:
-                    messagebox.showwarning("Erro Carteiras",
-                                         f"Não foi possível localizar a tabela de carteiras após fallback: {str(e_fallback)}")
-                    raw_data_carteiras = []
+                    self.driver.get("https://investidor10.com.br/carteiras/resumo/")
+                except Exception as nav_error:
+                    self.status_callback(f"Erro de navegação: {nav_error}", 70)
+                    if tentativa < max_tentativas - 1:
+                        time.sleep(2)
+                        continue
+                    else:
+                        raise nav_error
 
-            # Adicionar "Origem" aos dados da carteira
-            for linha_dict in raw_data_carteiras:
-                linha_dict["Origem"] = "Carteira"
-            dados_carteiras.extend(raw_data_carteiras)
+                if self.verificar_cancelamento():
+                    self.status_callback("Extração de carteiras cancelada pelo usuário.", 0)
+                    return []
 
-            self.status_callback("Extração de dados de CARTEIRAS concluída.", 90)
+                # Aguarda carregamento da página com múltiplos seletores
+                self.status_callback("Aguardando carregamento da página...", 72)
+                seletores_espera = [
+                    "#Ticker-tickers_wrapper > div:nth-child(3)"
+                    #"#Ticker-tickers_wrapper",
+                    #"#Ticker-tickers",
+                    #".table-responsive"
+                ]
 
-        except Exception as e:
-            messagebox.showerror("Erro Carteiras", f"Erro ao extrair dados das carteiras: {str(e)}")
-            self.status_callback(f"Erro na extração de carteiras: {e}", 85)
+                elemento_encontrado = None
+                for seletor in seletores_espera:
+                    try:
+                        elemento_encontrado = WebDriverWait(self.driver, 10).until(
+                            EC.presence_of_element_located((By.CSS_SELECTOR, seletor))
+                        )
+                        break
+                    except:
+                        continue
+
+                if not elemento_encontrado:
+                    raise Exception("Nenhum elemento da página de carteiras foi encontrado")
+
+                self.status_callback("Extraindo dados da tabela de carteiras...", 80)
+                raw_data_carteiras = []
+
+                # Múltiplas estratégias de extração
+                estrategias = [
+                    lambda: self.extrair_dados_tabela(id_tabela="Ticker-tickers"),
+                    lambda: self.extrair_dados_tabela(seletor_tabela="#Ticker-tickers_wrapper table#Ticker-tickers"),
+                    lambda: self.extrair_dados_tabela(seletor_tabela="#Ticker-tickers_wrapper table"),
+                    lambda: self.extrair_dados_tabela(seletor_tabela=".table-responsive table"),
+                    lambda: self._extrair_carteiras_fallback()
+                ]
+
+                for i, estrategia in enumerate(estrategias):
+                    try:
+                        self.status_callback(f"Tentando estratégia de extração {i + 1}...", 82 + i)
+                        raw_data_carteiras = estrategia()
+                        if raw_data_carteiras:
+                            break
+                    except Exception as e:
+                        self.status_callback(f"Estratégia {i + 1} falhou: {str(e)[:50]}...", 82 + i)
+                        continue
+
+                if not raw_data_carteiras:
+                    if tentativa < max_tentativas - 1:
+                        self.status_callback(f"Tentativa {tentativa + 1} falhou, tentando novamente...", 75)
+                        time.sleep(3)
+                        continue
+                    else:
+                        raise Exception("Todas as estratégias de extração falharam")
+
+                # Adicionar "Origem" aos dados da carteira
+                for linha_dict in raw_data_carteiras:
+                    if isinstance(linha_dict, dict):
+                        linha_dict["Origem"] = "Carteira"
+                dados_carteiras.extend(raw_data_carteiras)
+
+                self.status_callback("Extração de dados de CARTEIRAS concluída.", 90)
+                break  # Sucesso, sai do loop de tentativas
+
+            except Exception as e:
+                error_msg = str(e)
+                self.status_callback(f"Erro na tentativa {tentativa + 1}: {error_msg[:50]}...", 75)
+
+                if tentativa < max_tentativas - 1:
+                    # Tenta reinicializar o driver se necessário
+                    if "GetHandleVerifier" in error_msg or "chrome" in error_msg.lower():
+                        try:
+                            self.status_callback("Tentando reinicializar o navegador...", 76)
+                            self.cleanup()
+                            time.sleep(2)
+                            self.setup_driver()
+                            self.access_site_and_await_login()
+                        except:
+                            pass
+
+                    time.sleep(2)
+                    continue
+                else:
+                    # Última tentativa falhou - apenas registra no status, não exibe erro ao usuário
+                    self.status_callback("Não foi possível extrair dados de carteiras. Continuando apenas com ações...", 85)
+                    # Não exibe messagebox.showerror aqui
 
         return dados_carteiras
+
+    def _extrair_carteiras_fallback(self):
+        """Método de fallback para extrair dados de carteiras usando JavaScript."""
+        try:
+            script = """
+            const tables = document.querySelectorAll('table');
+            const data = [];
+
+            for (let table of tables) {
+                const rows = table.querySelectorAll('tr');
+                if (rows.length > 1) {
+                    const headers = [];
+                    const headerRow = rows[0];
+                    for (let cell of headerRow.querySelectorAll('th, td')) {
+                        headers.push(cell.textContent.trim());
+                    }
+
+                    for (let i = 1; i < rows.length; i++) {
+                        const row = rows[i];
+                        const cells = row.querySelectorAll('td');
+                        if (cells.length > 0) {
+                            const rowData = {};
+                            for (let j = 0; j < cells.length && j < headers.length; j++) {
+                                rowData[headers[j]] = cells[j].textContent.trim();
+                            }
+                            data.push(rowData);
+                        }
+                    }
+
+                    if (data.length > 0) {
+                        return data;
+                    }
+                }
+            }
+
+            return [];
+            """
+
+            resultado = self.driver.execute_script(script)
+            return resultado if resultado else []
+
+        except Exception as e:
+            self.status_callback(f"Fallback JavaScript falhou: {e}", 85)
+            return []
 
     def extrair_colunas_personalizadas_otimizado(self, colunas_personalizadas, resultado_acao):
         """
@@ -530,18 +708,31 @@ class DataExtractor:
                 df_carteiras_export.drop(columns=["Origem"], inplace=True)
 
             with pd.ExcelWriter(filepath, engine='xlsxwriter') as writer:
-                self._write_dataframe_to_excel_sheet(writer, df_acoes_export, 'Acoes')
-                self._write_dataframe_to_excel_sheet(writer, df_carteiras_export, 'Carteiras')
+                # Sempre tenta escrever a aba de ações se houver dados
+                if not df_acoes_export.empty:
+                    self._write_dataframe_to_excel_sheet(writer, df_acoes_export, 'Acoes')
+
+                # Só escreve a aba de carteiras se houver dados
+                if not df_carteiras_export.empty:
+                    self._write_dataframe_to_excel_sheet(writer, df_carteiras_export, 'Carteiras')
+
+            # Mensagem de sucesso personalizada baseada no que foi exportado
+            if not df_acoes_export.empty and not df_carteiras_export.empty:
+                success_msg = "Os dados de AÇÕES e CARTEIRAS foram exportados para:"
+            elif not df_acoes_export.empty:
+                success_msg = "Os dados de AÇÕES foram exportados para:"
+            else:
+                success_msg = "Os dados de CARTEIRAS foram exportados para:"
 
             try:
                 if os.name == 'nt':  # Windows
                     abs_filepath = os.path.abspath(filepath)
                     messagebox.showinfo("Exportação Concluída",
-                                      f"Os dados foram exportados para:\n{abs_filepath}\n\nA pasta contendo o arquivo será aberta.")
+                                      f"{success_msg}\n{abs_filepath}\n\nA pasta contendo o arquivo será aberta.")
                     subprocess.Popen(f'explorer /select,"{abs_filepath}"', shell=True)
                 else:
                     messagebox.showinfo("Exportação Concluída",
-                                      f"Dados exportados para {filepath}.\nPor favor, navegue até a pasta para abrir o arquivo manualmente.")
+                                      f"{success_msg} {filepath}.\nPor favor, navegue até a pasta para abrir o arquivo manualmente.")
             except Exception as e_open:
                 messagebox.showwarning("Aviso de Abertura de Pasta",
                                      f"Dados exportados para {filepath}, mas ocorreu um erro ao tentar abrir a pasta: {str(e_open)}")
