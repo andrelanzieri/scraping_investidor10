@@ -9,10 +9,22 @@ from selenium.webdriver.support import expected_conditions as EC
 import pandas as pd
 from webdriver_manager.chrome import ChromeDriverManager
 import os
-import re
 import subprocess
 import threading
 import time
+import logging
+import re
+
+# Constantes
+DEFAULT_WAIT_TIME = 10
+MAX_RETRY_ATTEMPTS = 3
+RETRY_DELAY = 2
+WINDOW_SIZE = "1920,1080"
+USER_AGENT = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36'
+
+# Configurar logging
+logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
+logger = logging.getLogger(__name__)
 
 
 class DataExtractor:
@@ -32,9 +44,13 @@ class DataExtractor:
             cancelamento_event (threading.Event): Evento para controlar cancelamento
         """
         self.config = config
-        self.status_callback = status_callback or (lambda msg, prog: print(msg))
+        self.status_callback = status_callback or self._default_status_callback
         self.cancelamento_event = cancelamento_event or threading.Event()
         self.driver = None
+
+    def _default_status_callback(self, msg, prog):
+        """Callback padrão para status quando nenhum é fornecido."""
+        logger.info(f"Status: {msg} (Progresso: {prog}%)")
 
     def setup_driver(self):
         """Configura e inicia o WebDriver do Chrome."""
@@ -45,57 +61,69 @@ class DataExtractor:
             chrome_options.add_argument("--headless")
 
         # Argumentos essenciais para executáveis
-        chrome_options.add_argument("--no-sandbox")
-        chrome_options.add_argument("--disable-dev-shm-usage")
-        chrome_options.add_argument("--disable-gpu")
-        chrome_options.add_argument("--disable-software-rasterizer")
-        chrome_options.add_argument("--disable-background-timer-throttling")
-        chrome_options.add_argument("--disable-backgrounding-occluded-windows")
-        chrome_options.add_argument("--disable-renderer-backgrounding")
-        chrome_options.add_argument("--disable-features=TranslateUI")
-        chrome_options.add_argument("--disable-ipc-flooding-protection")
+        essential_args = [
+            "--no-sandbox",
+            "--disable-dev-shm-usage",
+            "--disable-gpu",
+            "--disable-software-rasterizer",
+            "--disable-background-timer-throttling",
+            "--disable-backgrounding-occluded-windows",
+            "--disable-renderer-backgrounding",
+            "--disable-features=TranslateUI",
+            "--disable-ipc-flooding-protection"
+        ]
 
         # Argumentos para estabilidade
-        chrome_options.add_argument("--disable-extensions")
-        chrome_options.add_argument("--disable-plugins")
-        chrome_options.add_argument("--disable-infobars")
-        chrome_options.add_argument("--disable-notifications")
-        chrome_options.add_argument("--disable-popup-blocking")
-        chrome_options.add_argument("--disable-default-apps")
+        stability_args = [
+            "--disable-extensions",
+            "--disable-plugins",
+            "--disable-infobars",
+            "--disable-notifications",
+            "--disable-popup-blocking",
+            "--disable-default-apps"
+        ]
 
         # Argumentos para performance
-        chrome_options.add_argument("--memory-pressure-off")
-        chrome_options.add_argument("--max_old_space_size=4096")
-        chrome_options.add_argument("--disable-background-networking")
+        performance_args = [
+            "--memory-pressure-off",
+            "--max_old_space_size=4096",
+            "--disable-background-networking"
+        ]
 
         # Argumentos para compatibilidade com executáveis
-        chrome_options.add_argument("--disable-logging")
-        chrome_options.add_argument("--disable-log-file")
-        chrome_options.add_argument("--log-level=3")
-        chrome_options.add_argument("--silent")
-        chrome_options.add_argument("--disable-crash-reporter")
-        chrome_options.add_argument("--disable-in-process-stack-traces")
-        chrome_options.add_argument("--disable-logging")
-        chrome_options.add_argument("--disable-dev-tools")
+        compatibility_args = [
+            "--disable-logging",
+            "--disable-log-file",
+            "--log-level=3",
+            "--silent",
+            "--disable-crash-reporter",
+            "--disable-in-process-stack-traces",
+            "--disable-dev-tools"
+        ]
+
+        # Adicionar todos os argumentos
+        for args_list in [essential_args, stability_args, performance_args, compatibility_args]:
+            for arg in args_list:
+                chrome_options.add_argument(arg)
 
         # Configurações de janela
         if not self.config["headless"]:
             chrome_options.add_argument("--start-maximized")
         else:
-            chrome_options.add_argument("--window-size=1920,1080")
+            chrome_options.add_argument(f"--window-size={WINDOW_SIZE}")
 
         # Anti-detecção
         chrome_options.add_argument("--disable-blink-features=AutomationControlled")
         chrome_options.add_experimental_option("excludeSwitches", ["enable-automation"])
         chrome_options.add_experimental_option('useAutomationExtension', False)
-        chrome_options.add_argument('--user-agent=Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36')
+        chrome_options.add_argument(f'--user-agent={USER_AGENT}')
 
         # Configurações experimentais
         chrome_options.add_experimental_option("detach", False)
         chrome_options.add_experimental_option("prefs", {
             "profile.default_content_setting_values.notifications": 2,
             "profile.default_content_settings.popups": 0,
-            "profile.managed_default_content_settings.images": 1,  # Permite imagens (1 = permitir, 2 = bloquear)
+            "profile.managed_default_content_settings.images": 1,
         })
 
         # Configuração do perfil
@@ -114,17 +142,13 @@ class DataExtractor:
             self.driver = webdriver.Chrome(service=service, options=chrome_options)
 
             # Scripts anti-detecção
-            self.driver.execute_script("Object.defineProperty(navigator, 'webdriver', {get: () => undefined})")
-            self.driver.execute_cdp_cmd('Network.setUserAgentOverride', {
-                "userAgent": 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36'
-            })
-            self.driver.execute_script("Object.defineProperty(navigator, 'plugins', {get: () => [1, 2, 3, 4, 5]})")
-            self.driver.execute_script("Object.defineProperty(navigator, 'languages', {get: () => ['en-US', 'en']})")
+            self._apply_anti_detection_scripts()
 
             self.driver.implicitly_wait(5)
             return self.driver
 
         except Exception as e:
+            logger.error(f"Erro ao inicializar Chrome: {e}")
             self.status_callback(f"Erro ao inicializar Chrome: {e}", 0)
             # Fallback: tenta sem ChromeDriverManager
             try:
@@ -132,11 +156,22 @@ class DataExtractor:
                 service = Service()
                 service.creation_flags = 0x08000000
                 self.driver = webdriver.Chrome(service=service, options=chrome_options)
-                self.driver.execute_script("Object.defineProperty(navigator, 'webdriver', {get: () => undefined})")
+                self._apply_anti_detection_scripts()
                 self.driver.implicitly_wait(5)
                 return self.driver
             except Exception as e2:
+                logger.error(f"Fallback também falhou: {e2}")
                 raise Exception(f"Falha ao inicializar Chrome. Erro principal: {e}. Erro fallback: {e2}")
+
+    def _apply_anti_detection_scripts(self):
+        """Aplica scripts anti-detecção ao driver."""
+        try:
+            self.driver.execute_script("Object.defineProperty(navigator, 'webdriver', {get: () => undefined})")
+            self.driver.execute_cdp_cmd('Network.setUserAgentOverride', {"userAgent": USER_AGENT})
+            self.driver.execute_script("Object.defineProperty(navigator, 'plugins', {get: () => [1, 2, 3, 4, 5]})")
+            self.driver.execute_script("Object.defineProperty(navigator, 'languages', {get: () => ['en-US', 'en']})")
+        except Exception as e:
+            logger.warning(f"Erro ao aplicar scripts anti-detecção: {e}")
 
     def verificar_cancelamento(self):
         """Verifica se o cancelamento foi solicitado."""
@@ -182,7 +217,7 @@ class DataExtractor:
             try:
                 url = f"https://investidor10.com.br/acoes/{acao}/"
                 self.driver.get(url)
-                WebDriverWait(self.driver, 10).until(
+                WebDriverWait(self.driver, DEFAULT_WAIT_TIME).until(
                     EC.presence_of_element_located((By.TAG_NAME, "body"))
                 )
                 resultado_acao = {"Ticker": acao, "Origem": "Ação"}
@@ -211,19 +246,18 @@ class DataExtractor:
 
         self.status_callback("Iniciando extração de dados de CARTEIRAS...", 65)
         dados_carteiras = []
-        max_tentativas = 3
 
-        for tentativa in range(max_tentativas):
+        for tentativa in range(MAX_RETRY_ATTEMPTS):
             try:
-                self.status_callback(f"Acessando página de carteiras (tentativa {tentativa + 1}/{max_tentativas})...", 70)
+                self.status_callback(f"Acessando página de carteiras (tentativa {tentativa + 1}/{MAX_RETRY_ATTEMPTS})...", 70)
 
                 # Navega para a página com retry
                 try:
                     self.driver.get("https://investidor10.com.br/carteiras/resumo/")
                 except Exception as nav_error:
                     self.status_callback(f"Erro de navegação: {nav_error}", 70)
-                    if tentativa < max_tentativas - 1:
-                        time.sleep(2)
+                    if tentativa < MAX_RETRY_ATTEMPTS - 1:
+                        time.sleep(RETRY_DELAY)
                         continue
                     else:
                         raise nav_error
@@ -244,11 +278,12 @@ class DataExtractor:
                 elemento_encontrado = None
                 for seletor in seletores_espera:
                     try:
-                        elemento_encontrado = WebDriverWait(self.driver, 10).until(
+                        elemento_encontrado = WebDriverWait(self.driver, DEFAULT_WAIT_TIME).until(
                             EC.presence_of_element_located((By.CSS_SELECTOR, seletor))
                         )
                         break
-                    except:
+                    except Exception as e:
+                        logger.debug(f"Seletor {seletor} não encontrado: {e}")
                         continue
 
                 if not elemento_encontrado:
@@ -277,9 +312,9 @@ class DataExtractor:
                         continue
 
                 if not raw_data_carteiras:
-                    if tentativa < max_tentativas - 1:
+                    if tentativa < MAX_RETRY_ATTEMPTS - 1:
                         self.status_callback(f"Tentativa {tentativa + 1} falhou, tentando novamente...", 75)
-                        time.sleep(3)
+                        time.sleep(RETRY_DELAY + 1)  # Aumenta o delay progressivamente
                         continue
                     else:
                         raise Exception("Todas as estratégias de extração falharam")
@@ -297,7 +332,7 @@ class DataExtractor:
                 error_msg = str(e)
                 self.status_callback(f"Erro na tentativa {tentativa + 1}: {error_msg[:50]}...", 75)
 
-                if tentativa < max_tentativas - 1:
+                if tentativa < MAX_RETRY_ATTEMPTS - 1:
                     # Tenta reinicializar o driver se necessário
                     if "GetHandleVerifier" in error_msg or "chrome" in error_msg.lower():
                         try:
@@ -306,10 +341,10 @@ class DataExtractor:
                             time.sleep(2)
                             self.setup_driver()
                             self.access_site_and_await_login()
-                        except:
-                            pass
+                        except Exception as reinit_error:
+                            logger.warning(f"Erro ao reinicializar driver: {reinit_error}")
 
-                    time.sleep(2)
+                    time.sleep(RETRY_DELAY)
                     continue
                 else:
                     # Última tentativa falhou - apenas registra no status, não exibe erro ao usuário
@@ -394,7 +429,8 @@ class DataExtractor:
                                     except:
                                         continue
                         resultado_acao[coluna["nome"]] = valor
-                    except:
+                    except Exception as e:
+                        logger.debug(f"Erro ao extrair coluna simples {coluna['nome']}: {e}")
                         resultado_acao[coluna["nome"]] = "N/A"
 
             # Processar colunas avançadas usando JavaScript quando possível
@@ -429,7 +465,8 @@ class DataExtractor:
                                     resultado_acao[coluna["nome"]] = self.extrair_seletor_complexo(coluna["seletor_css"])
                                 else:
                                     resultado_acao[coluna["nome"]] = "N/A"
-                            except:
+                            except Exception as e:
+                                logger.debug(f"Erro ao extrair coluna avançada {coluna['nome']}: {e}")
                                 resultado_acao[coluna["nome"]] = "N/A"
 
         except Exception as e:
@@ -464,7 +501,17 @@ class DataExtractor:
     def extrair_seletor_complexo(self, seletor_css):
         """
         Identifica e processa seletores complexos, particularmente aqueles relacionados a tabelas.
+
+        Args:
+            seletor_css (str): Seletor CSS para extrair dados
+
+        Returns:
+            str: Valor extraído ou "N/A" se não encontrado
         """
+        if not seletor_css or not isinstance(seletor_css, str):
+            logger.warning(f"Seletor CSS inválido: {seletor_css}")
+            return "N/A"
+
         try:
             script = f"""
             try {{
@@ -478,7 +525,7 @@ class DataExtractor:
             if resultado and resultado != "N/A":
                 return resultado
         except Exception as e:
-            pass
+            logger.debug(f"Erro ao executar JavaScript para seletor {seletor_css}: {e}")
 
         try:
             elemento = WebDriverWait(self.driver, 3).until(
@@ -487,30 +534,43 @@ class DataExtractor:
             if elemento:
                 return elemento.text.strip() or "N/A"
         except Exception as e:
-            pass
+            logger.debug(f"Erro ao encontrar elemento com seletor {seletor_css}: {e}")
 
+        # Processamento específico para seletores de tabela
         if ('tr' in seletor_css and 'td' in seletor_css) or \
            ('tr' in seletor_css and 'th' in seletor_css):
-            linha_match = re.search(r'tr[^>]*nth-child\((\d+)\)', seletor_css)
-            coluna_match = re.search(r'(?:td|th)[^>]*nth-child\((\d+)\)', seletor_css)
-
-            linha = int(linha_match.group(1)) if linha_match else 1
-            coluna = int(coluna_match.group(1)) if coluna_match else 1
-
-            classe_linha = None
-            classe_match = re.search(r'tr\.([a-zA-Z0-9_-]+)', seletor_css)
-            if classe_match:
-                classe_linha = classe_match.group(1)
-
-            if classe_linha:
-                if 'visible-even' in classe_linha:
-                    return self.extrair_seletor_tr_visible_even(linha, coluna)
-                else:
-                    return self.extrair_celula_com_classe(linha, coluna, classe_linha)
-            else:
-                return self.extrair_celula_tabela(linha - 1, coluna - 1)
+            return self._processar_seletor_tabela(seletor_css)
 
         return "N/A"
+
+    def _processar_seletor_tabela(self, seletor_css):
+        """
+        Processa seletores CSS específicos para tabelas.
+
+        Args:
+            seletor_css (str): Seletor CSS da tabela
+
+        Returns:
+            str: Valor extraído da célula ou "N/A"
+        """
+        linha_match = re.search(r'tr[^>]*nth-child\((\d+)\)', seletor_css)
+        coluna_match = re.search(r'(?:td|th)[^>]*nth-child\((\d+)\)', seletor_css)
+
+        linha = int(linha_match.group(1)) if linha_match else 1
+        coluna = int(coluna_match.group(1)) if coluna_match else 1
+
+        classe_linha = None
+        classe_match = re.search(r'tr\.([a-zA-Z0-9_-]+)', seletor_css)
+        if classe_match:
+            classe_linha = classe_match.group(1)
+
+        if classe_linha:
+            if 'visible-even' in classe_linha:
+                return self.extrair_seletor_tr_visible_even(linha, coluna)
+            else:
+                return self.extrair_celula_com_classe(linha, coluna, classe_linha)
+        else:
+            return self.extrair_celula_tabela(linha - 1, coluna - 1)
 
     def extrair_seletor_tr_visible_even(self, numero_linha, numero_coluna):
         """Função específica para tratar o seletor tr.visible-even:nth-child(X) > td:nth-child(Y)."""
@@ -680,7 +740,7 @@ class DataExtractor:
             return result
 
         except Exception as e:
-            print(f"Erro no fallback de extração de tabela: {str(e)}")
+            logger.error(f"Erro no fallback de extração de tabela: {str(e)}")
             return []
 
     def export_to_excel(self, df_acoes, df_carteiras):

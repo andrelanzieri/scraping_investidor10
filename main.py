@@ -24,8 +24,14 @@ def main():
         # Iniciar loop principal da interface
         root.mainloop()
 
+    except ImportError as e:
+        print(f"Erro de importação: {e}")
+        print("Instale as dependências com: pip install -r requirements.txt")
+        input("Pressione Enter para fechar...")
     except Exception as e:
-        print(f"Erro ao inicializar a aplicação: {e}")
+        print(f"Erro inesperado ao inicializar a aplicação: {e}")
+        import traceback
+        traceback.print_exc()
         input("Pressione Enter para fechar...")
 
 

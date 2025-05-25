@@ -232,8 +232,6 @@ class InvestidorApp:
         """Habilita todos os atalhos de teclado."""
         for tecla, funcao in self.atalhos_funcoes.items():
             self.root.bind(tecla, funcao)
-        if hasattr(self, 'lbl_status'):
-            self.atualizar_status("Atalhos de teclado reabilitados", None)
 
     def desabilitar_atalhos(self):
         """Desabilita todos os atalhos de teclado."""
@@ -708,7 +706,9 @@ class InvestidorApp:
 
                 self.root.update_idletasks()
             except Exception as e:
-                print(f"Erro ao atualizar status: {e}")
+                # Log do erro sem usar print
+                import logging
+                logging.error(f"Erro ao atualizar status: {e}")
 
         # Se estamos na thread principal, executar diretamente
         if threading.current_thread() == threading.main_thread():
@@ -849,7 +849,8 @@ class InvestidorApp:
                 else:
                     self._toggle_widgets_recursively(widget, not desabilitar)
         except Exception as e:
-            print(f"Erro ao desabilitar interface: {e}")
+            import logging
+            logging.error(f"Erro ao desabilitar interface: {e}")
 
     def _toggle_widgets_recursively(self, widget, enabled):
         """Recursivamente habilita/desabilita widgets."""

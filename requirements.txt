@@ -16,12 +16,6 @@ xlsxwriter>=3.0.0
 # WebDriver Manager - Gerenciamento automático de drivers
 webdriver-manager==4.0.2
 
-# Dependências adicionais recomendadas
-# Requests - Para requisições HTTP (caso necessário)
-requests>=2.31.0
-
-# Lxml - Parser XML/HTML mais rápido para pandas
+# Dependências opcionais (podem melhorar performance)
+# Lxml - Parser XML/HTML mais rápido para pandas (opcional)
 lxml>=4.9.0
-
-# Pillow - Processamento de imagens (caso necessário para capturas de tela)
-Pillow>=10.0.0
