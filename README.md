@@ -303,6 +303,28 @@ Contribuições são bem-vindas! Para contribuir:
 - 📊 Novos formatos de exportação
 - 🧪 Testes automatizados
 
+## ☕ Apoie o Projeto
+
+Se este projeto foi útil para você e você gostaria de apoiar o desenvolvimento contínuo, considere me comprar um café! ☕
+
+![Buy Me A Coffee](coffee.png)
+
+Seu apoio ajuda a:
+
+- 🚀 Manter o projeto atualizado
+- 🐛 Corrigir bugs rapidamente
+- ✨ Adicionar novas funcionalidades
+- 📚 Melhorar a documentação
+- 🔧 Manter a compatibilidade com novas versões
+
+**Outras formas de apoiar:**
+
+- ⭐ Dê uma estrela no projeto
+- 🐛 Reporte bugs e problemas
+- 💡 Sugira melhorias
+- 🤝 Contribua com código
+- 📢 Compartilhe com outros desenvolvedores
+
 ## 📄 Licença
 
 Este projeto está licenciado sob a Licença MIT - veja o arquivo [LICENSE](LICENSE) para detalhes.
@@ -313,7 +335,3 @@ Este projeto está licenciado sob a Licença MIT - veja o arquivo [LICENSE](LICE
 - [Selenium](https://selenium-python.readthedocs.io/) - Automação web
 - [Pandas](https://pandas.pydata.org/) - Manipulação de dados
 - Comunidade Python - Suporte e bibliotecas
-
----
-
-⭐ **Se este projeto foi útil, considere dar uma estrela!**

@@ -16,6 +16,9 @@ xlsxwriter>=3.0.0
 # WebDriver Manager - Gerenciamento automático de drivers
 webdriver-manager==4.0.2
 
+# Pillow - Manipulação de imagens (para exibir QR Code PIX)
+Pillow>=10.0.0
+
 # Dependências opcionais (podem melhorar performance)
 # Lxml - Parser XML/HTML mais rápido para pandas (opcional)
 lxml>=4.9.0

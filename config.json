@@ -268,5 +268,6 @@
         }
     ],
     "headless": true,
-    "tema": "escuro"
+    "tema": "escuro",
+    "mostrar_mensagem_inicial": true
 }
