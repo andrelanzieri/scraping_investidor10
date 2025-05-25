@@ -307,7 +307,7 @@ Contribuições são bem-vindas! Para contribuir:
 
 Se este projeto foi útil para você e você gostaria de apoiar o desenvolvimento contínuo, considere me comprar um café! ☕
 
-![Buy Me A Coffee](coffee.png)
+![Buy Me A Coffee](screenshots/coffee.png)
 
 Seu apoio ajuda a:
 
