@@ -61,7 +61,7 @@ def mostrar_mensagem_inicial():
     janela_msg.title("Configuração Inicial - Investidor10")
     janela_msg.geometry("600x400")
     janela_msg.resizable(False, False)
-    janela_msg.configure(bg="#f8f9fa")
+    janela_msg.configure(bg="#f8fafc")
 
     # Centralizar a janela
     janela_msg.transient()
@@ -78,14 +78,14 @@ def mostrar_mensagem_inicial():
     janela_msg.geometry(f"600x400+{x}+{y}")
 
     # Frame principal
-    frame_principal = tk.Frame(janela_msg, bg="#f8f9fa", padx=30, pady=20)
+    frame_principal = tk.Frame(janela_msg, bg="#f8fafc", padx=30, pady=20)
     frame_principal.pack(fill=tk.BOTH, expand=True)
 
     # Título
     titulo = tk.Label(frame_principal,
-                     text="🔧 Configuração Inicial",
+                     text="🔧  Configuração Inicial",
                      font=("Segoe UI", 16, "bold"),
-                     bg="#f8f9fa", fg="#2c3e50")
+                     bg="#f8fafc", fg="#1e293b")
     titulo.pack(pady=(0, 20))
 
     # Texto da mensagem
@@ -118,8 +118,8 @@ def mostrar_mensagem_inicial():
                        height=12,
                        width=70,
                        font=("Segoe UI", 10),
-                       bg="white",
-                       fg="#2c3e50",
+                       bg="#ffffff",
+                       fg="#1e293b",
                        relief=tk.RIDGE,
                        bd=1,
                        padx=15,

@@ -57,8 +57,8 @@ class InvestidorApp:
         self.root.title("📊 Extrator de Dados - Investidor10")
 
         # Configurar tamanho da janela
-        window_width = 1280
-        window_height = 900
+        window_width = 1200
+        window_height = 720
         self.root.minsize(1000, 600)
 
         # Definir tamanho inicial sem posição (será centralizada depois)
@@ -68,12 +68,17 @@ class InvestidorApp:
         self.window_width = window_width
         self.window_height = window_height
 
-        # Configurar fontes
-        self.default_font = tkfont.nametofont("TkDefaultFont")
-        self.default_font.configure(size=10, family="Segoe UI")
+        # Configurar fontes modernas e hierarquia tipográfica
+        self.default_font = tkfont.Font(family="Segoe UI", size=10, weight="normal")
         self.root.option_add("*Font", self.default_font)
-        self.title_font = tkfont.Font(family="Segoe UI", size=11, weight="bold")
-        self.button_font = tkfont.Font(family="Segoe UI", size=9)
+
+        # Hierarquia de fontes
+        self.title_font = tkfont.Font(family="Segoe UI", size=12, weight="bold")
+        self.subtitle_font = tkfont.Font(family="Segoe UI", size=11, weight="bold")
+        self.button_font = tkfont.Font(family="Segoe UI", size=9, weight="normal")
+        self.small_font = tkfont.Font(family="Segoe UI", size=8, weight="normal")
+        self.large_button_font = tkfont.Font(family="Segoe UI", size=11, weight="bold")
+        self.monospace_font = tkfont.Font(family="Consolas", size=9, weight="normal")
 
         # Configurar tema
         self.tema_escuro = True
@@ -111,7 +116,7 @@ class InvestidorApp:
 
             # Usar dimensões armazenadas para garantir consistência
             window_width = getattr(self, 'window_width', 1280)
-            window_height = getattr(self, 'window_height', 900)
+            window_height = getattr(self, 'window_height', 800)
 
             # Calcular posição central da tela
             screen_width = self.root.winfo_screenwidth()
@@ -136,49 +141,65 @@ class InvestidorApp:
         except Exception as e:
             # Em caso de erro, pelo menos garantir que a janela tenha o tamanho correto
             print(f"Erro ao centralizar janela: {e}")
-            self.root.geometry(f"{getattr(self, 'window_width', 1280)}x{getattr(self, 'window_height', 900)}")
+            self.root.geometry(f"{getattr(self, 'window_width', 1280)}x{getattr(self, 'window_height', 800)}")
 
     def aplicar_tema(self):
-        """Aplica o tema claro ou escuro à interface com paleta de cores melhorada."""
+        """Aplica o tema claro ou escuro à interface com paleta de cores melhorada e moderna."""
         if self.tema_escuro:
-            self.cor_fundo = "#1e1e1e"
-            self.cor_fundo_secundario = "#2d2d2d"
-            self.cor_texto = "#ffffff"
-            self.cor_texto_secundario = "#cccccc"
-            self.cor_botao = "#404040"
-            self.cor_botao_hover = "#4a4a4a"
-            self.cor_botao_ativo = "#3d5a80"
-            self.cor_entrada = "#333333"
-            self.cor_lista = "#2d2d2d"
-            self.cor_borda = "#555555"
-            self.cor_destaque = "#0066cc"
-            self.cor_sucesso = "#28a745"
-            self.cor_aviso = "#ffc107"
-            self.cor_erro = "#dc3545"
-            self.cor_cabecalho_fundo = "#4a4a4a"
-            self.cor_cabecalho_texto = "#ffffff"
+            # Tema escuro moderno com cores mais suaves e harmoniosas
+            self.cor_fundo = "#0f1419"                    # Azul muito escuro, quase preto
+            self.cor_fundo_secundario = "#1a1f26"         # Azul escuro suave
+            self.cor_fundo_terciario = "#252d38"          # Azul acinzentado
+            self.cor_texto = "#e8eaed"                    # Branco suave
+            self.cor_texto_secundario = "#9aa0a6"         # Cinza claro
+            self.cor_texto_terciario = "#5f6368"          # Cinza médio
+            self.cor_botao = "#2d3748"                    # Azul acinzentado escuro
+            self.cor_botao_hover = "#4a5568"              # Azul acinzentado médio
+            self.cor_botao_ativo = "#3182ce"              # Azul vibrante
+            self.cor_botao_ativo_hover = "#2c5aa0"        # Azul vibrante escuro
+            self.cor_entrada = "#1e2a38"                  # Azul escuro para inputs
+            self.cor_entrada_foco = "#2d3748"             # Azul médio para foco
+            self.cor_lista = "#1a1f26"                    # Mesmo do fundo secundário
+            self.cor_borda = "#374151"                    # Cinza azulado
+            self.cor_borda_foco = "#60a5fa"               # Azul claro para foco
+            self.cor_destaque = "#3b82f6"                 # Azul moderno
+            self.cor_sucesso = "#10b981"                  # Verde moderno
+            self.cor_aviso = "#f59e0b"                    # Amarelo moderno
+            self.cor_erro = "#ef4444"                     # Vermelho moderno
+            self.cor_info = "#06b6d4"                     # Ciano moderno
+            self.cor_cabecalho_fundo = "#1f2937"          # Cinza azulado escuro
+            self.cor_cabecalho_texto = "#f9fafb"          # Branco quase puro
+            self.cor_sombra = "#000000"                   # Preto para sombras
         else:
-            self.cor_fundo = "#f8f9fa"
-            self.cor_fundo_secundario = "#ffffff"
-            self.cor_texto = "#000000"
-            self.cor_texto_secundario = "#6c757d"
-            self.cor_botao = "#e9ecef"
-            self.cor_botao_hover = "#dee2e6"
-            self.cor_botao_ativo = "#0066cc"
-            self.cor_entrada = "#ffffff"
-            self.cor_lista = "#ffffff"
-            self.cor_borda = "#dee2e6"
-            self.cor_destaque = "#0066cc"
-            self.cor_sucesso = "#28a745"
-            self.cor_aviso = "#ffc107"
-            self.cor_erro = "#dc3545"
-            self.cor_cabecalho_fundo = "#ffffff"
-            self.cor_cabecalho_texto = "#333333"
+            # Tema claro moderno com cores mais suaves e profissionais
+            self.cor_fundo = "#f8fafc"                    # Cinza muito claro azulado
+            self.cor_fundo_secundario = "#ffffff"         # Branco puro
+            self.cor_fundo_terciario = "#f1f5f9"          # Cinza claro azulado
+            self.cor_texto = "#1e293b"                    # Azul escuro para texto
+            self.cor_texto_secundario = "#64748b"         # Cinza azulado
+            self.cor_texto_terciario = "#94a3b8"          # Cinza azulado claro
+            self.cor_botao = "#e2e8f0"                    # Cinza claro
+            self.cor_botao_hover = "#cbd5e1"              # Cinza médio
+            self.cor_botao_ativo = "#3b82f6"              # Azul moderno
+            self.cor_botao_ativo_hover = "#2563eb"        # Azul moderno escuro
+            self.cor_entrada = "#ffffff"                  # Branco puro
+            self.cor_entrada_foco = "#f8fafc"             # Cinza muito claro
+            self.cor_lista = "#ffffff"                    # Branco puro
+            self.cor_borda = "#d1d5db"                    # Cinza claro
+            self.cor_borda_foco = "#3b82f6"               # Azul para foco
+            self.cor_destaque = "#3b82f6"                 # Azul moderno
+            self.cor_sucesso = "#10b981"                  # Verde moderno
+            self.cor_aviso = "#f59e0b"                    # Amarelo moderno
+            self.cor_erro = "#ef4444"                     # Vermelho moderno
+            self.cor_info = "#06b6d4"                     # Ciano moderno
+            self.cor_cabecalho_fundo = "#ffffff"          # Branco puro
+            self.cor_cabecalho_texto = "#1f2937"          # Cinza escuro
+            self.cor_sombra = "#00000010"                 # Preto transparente para sombras
 
         self.root.configure(bg=self.cor_fundo)
 
     def configurar_estilos_ttk(self):
-        """Configura estilos TTK melhorados para elementos da interface."""
+        """Configura estilos TTK melhorados e modernos para elementos da interface."""
         if self.tema_escuro:
             try:
                 self.style.theme_use('clam')
@@ -190,54 +211,71 @@ class InvestidorApp:
             except:
                 pass
 
-        # Estilos para barra de progresso
+        # Configurar estilo geral do Notebook (abas)
+        self.style.configure("TNotebook",
+                           background=self.cor_fundo,
+                           borderwidth=0,
+                           tabmargins=[2, 5, 2, 0])
+
+        self.style.configure("TNotebook.Tab",
+                           background=self.cor_botao,
+                           foreground=self.cor_texto,
+                           padding=[20, 12],
+                           borderwidth=1,
+                           focuscolor='none')
+
+        self.style.map("TNotebook.Tab",
+                      background=[('selected', self.cor_fundo_secundario),
+                                ('active', self.cor_botao_hover)],
+                      foreground=[('selected', self.cor_texto),
+                                ('active', self.cor_texto)],
+                      expand=[('selected', [1, 1, 1, 0])])
+
+        # Estilos para barra de progresso com gradientes visuais
         self.style.configure("red.Horizontal.TProgressbar",
-                           troughcolor=self.cor_fundo,
+                           troughcolor=self.cor_fundo_terciario,
                            background=self.cor_erro,
                            lightcolor=self.cor_erro,
-                           darkcolor=self.cor_erro)
+                           darkcolor=self.cor_erro,
+                           borderwidth=1,
+                           relief='flat')
 
         self.style.configure("yellow.Horizontal.TProgressbar",
-                           troughcolor=self.cor_fundo,
+                           troughcolor=self.cor_fundo_terciario,
                            background=self.cor_aviso,
                            lightcolor=self.cor_aviso,
-                           darkcolor=self.cor_aviso)
+                           darkcolor=self.cor_aviso,
+                           borderwidth=1,
+                           relief='flat')
 
         self.style.configure("green.Horizontal.TProgressbar",
-                           troughcolor=self.cor_fundo,
+                           troughcolor=self.cor_fundo_terciario,
                            background=self.cor_sucesso,
                            lightcolor=self.cor_sucesso,
-                           darkcolor=self.cor_sucesso)
-
-        # Estilo para Treeview
-        self.style.configure("Custom.Treeview",
-                           rowheight=25,
+                           darkcolor=self.cor_sucesso,
                            borderwidth=1,
-                           relief="solid",
+                           relief='flat')
+
+        # Configurar Treeview com estilo moderno
+        self.style.configure("Custom.Treeview",
                            background=self.cor_lista,
-                           foreground=self.cor_texto if self.tema_escuro else "#000000",
+                           foreground=self.cor_texto,
                            fieldbackground=self.cor_lista,
-                           insertcolor=self.cor_texto if self.tema_escuro else "#000000",
-                           selectbackground=self.cor_destaque,
-                           selectforeground='white')
+                           borderwidth=1,
+                           relief='solid')
 
-        self.style.map("Custom.Treeview",
-                      background=[('selected', self.cor_destaque), ('', self.cor_lista if self.tema_escuro else '#ffffff')],
-                      foreground=[('selected', 'white'), ('', self.cor_texto if self.tema_escuro else '#000000')])
-
-        # Estilo para cabeçalho do Treeview
         self.style.configure("Custom.Treeview.Heading",
                            background=self.cor_cabecalho_fundo,
                            foreground=self.cor_cabecalho_texto,
-                           font=self.button_font,
-                           relief="raised",
-                           borderwidth=1,
-                           focuscolor='none',
-                           arrowcolor=self.cor_cabecalho_texto)
+                           relief='flat',
+                           borderwidth=1)
+
+        self.style.map("Custom.Treeview",
+                      background=[('selected', self.cor_destaque)],
+                      foreground=[('selected', 'white')])
 
         self.style.map("Custom.Treeview.Heading",
-                      background=[('active', self.cor_botao_hover)],
-                      foreground=[('active', self.cor_cabecalho_texto)])
+                      background=[('active', self.cor_botao_hover)])
 
         # Estilo para Combobox
         self.style.configure("Custom.TCombobox",
@@ -347,24 +385,17 @@ class InvestidorApp:
             json.dump(self.config, f, ensure_ascii=False, indent=4)
 
     def criar_interface(self):
-        """Cria a interface gráfica principal da aplicação, incluindo abas e barra de status."""
-        # Frame principal com padding melhorado
+        """Cria a interface gráfica principal da aplicação com design moderno e elegante."""
+        # Frame principal com padding otimizado
         main_frame = tk.Frame(self.root, bg=self.cor_fundo)
-        main_frame.pack(fill=tk.BOTH, expand=True, padx=15, pady=15)
+        main_frame.pack(fill=tk.BOTH, expand=True, padx=15, pady=10)
 
-        # Criar notebook (abas) com estilo melhorado
-        self.notebook = ttk.Notebook(main_frame)
-        self.notebook.pack(fill=tk.BOTH, expand=True, pady=(0, 15))
+        # Criar frame principal diretamente (sem notebook/abas)
+        self.tab_config = tk.Frame(main_frame, bg=self.cor_fundo_secundario)
+        self.tab_config.pack(fill=tk.BOTH, expand=True, pady=(10, 0))
 
-        # Aba de configuração com fundo melhorado
-        self.tab_config = tk.Frame(self.notebook, bg=self.cor_fundo_secundario, padx=20, pady=20)
-        self.notebook.add(self.tab_config, text="🔧 Configuração")
-
-        # Configurar aba de configuração
+        # Configurar interface principal
         self.configurar_tab_config()
-
-        # Adicionar barra de status e progresso na parte inferior
-        self.criar_barra_status()
 
         # Adicionar menu de ajuda
         self.criar_menu_ajuda()
@@ -721,9 +752,14 @@ Sua contribuição ajuda a manter o projeto ativo e a desenvolver novas funciona
         btn_fechar.pack(side=tk.RIGHT)
 
     def configurar_tab_config(self):
+        """Configura a aba principal com layout moderno e responsivo."""
+        # Container principal com padding otimizado
+        container_principal = tk.Frame(self.tab_config, bg=self.cor_fundo_secundario)
+        container_principal.pack(fill=tk.BOTH, expand=True, padx=20, pady=15)
+
         # Frame principal com duas colunas para Ações e Colunas Personalizadas
-        config_frame_principal = tk.Frame(self.tab_config, bg=self.cor_fundo_secundario)
-        config_frame_principal.pack(fill=tk.BOTH, expand=True, padx=0, pady=0)
+        config_frame_principal = tk.Frame(container_principal, bg=self.cor_fundo_secundario)
+        config_frame_principal.pack(fill=tk.BOTH, expand=True, pady=(0, 5))
 
         # Coluna esquerda - Ações
         self._criar_frame_acoes_ui(config_frame_principal)
@@ -731,44 +767,57 @@ Sua contribuição ajuda a manter o projeto ativo e a desenvolver novas funciona
         # Coluna direita - Colunas personalizadas
         self._criar_frame_colunas_ui(config_frame_principal)
 
-        # Separador visual
-        separador = tk.Frame(self.tab_config, height=2, bg=self.cor_borda)
-        separador.pack(fill=tk.X, padx=20, pady=20)
+        # Separador visual elegante
+        separador = tk.Frame(container_principal, height=1, bg=self.cor_borda, relief=tk.FLAT)
+        separador.pack(fill=tk.X, pady=(5, 5))
 
         # Frame para opções e iniciar extração (abaixo das duas colunas)
-        self._criar_frame_opcoes_e_botoes_ui(self.tab_config)
+        self._criar_frame_opcoes_e_botoes_ui(container_principal)
 
         # Configurar grid weights para as colunas de Ações e Colunas Personalizadas
         config_frame_principal.grid_columnconfigure(0, weight=1)
-        config_frame_principal.grid_columnconfigure(1, weight=2) # Colunas personalizadas podem precisar de mais espaço
-        config_frame_principal.grid_rowconfigure(0, weight=1) # Linha única para os frames de ações e colunas
+        config_frame_principal.grid_columnconfigure(1, weight=2)  # Colunas personalizadas precisam de mais espaço
+        config_frame_principal.grid_rowconfigure(0, weight=1)    # Linha única para os frames de ações e colunas
 
         self.atualizar_contador_acoes()
 
     def _criar_frame_acoes_ui(self, parent_frame):
-        frame_acoes = tk.LabelFrame(parent_frame, text="📈 Ações", bg=self.cor_fundo_secundario,
+        """Cria o frame de ações com design moderno e elegante."""
+        frame_acoes = tk.LabelFrame(parent_frame, text="📈  Ações", bg=self.cor_fundo_secundario,
                                    fg=self.cor_texto, font=self.title_font,
-                                   relief=tk.RIDGE, bd=1, highlightbackground=self.cor_borda,
+                                   relief=tk.FLAT, bd=2, highlightbackground=self.cor_borda,
                                    padx=15, pady=15)
-        frame_acoes.grid(row=0, column=0, padx=(0, 10), pady=0, sticky="nsew")
+        frame_acoes.grid(row=0, column=0, padx=(0, 15), pady=0, sticky="nsew")
 
-        frame_lista_acoes = tk.Frame(frame_acoes, bg=self.cor_fundo_secundario)
-        frame_lista_acoes.pack(fill=tk.BOTH, expand=True, padx=0, pady=(0, 10))
+        # Container para lista de ações com estilo moderno
+        container_lista = tk.Frame(frame_acoes, bg=self.cor_fundo_secundario)
+        container_lista.pack(fill=tk.BOTH, expand=True, pady=(0, 10))
 
-        # Scrollbar com estilo melhorado
+        # Frame para lista e scrollbar
+        frame_lista_acoes = tk.Frame(container_lista, bg=self.cor_fundo_secundario)
+        frame_lista_acoes.pack(fill=tk.BOTH, expand=True)
+
+        # Scrollbar com estilo moderno
         scrollbar = tk.Scrollbar(frame_lista_acoes, bg=self.cor_botao,
-                                troughcolor=self.cor_fundo_secundario, width=16)
-        scrollbar.pack(side=tk.RIGHT, fill=tk.Y, padx=(5, 0))
+                                troughcolor=self.cor_fundo_terciario,
+                                activebackground=self.cor_botao_hover,
+                                width=14)
+        scrollbar.pack(side=tk.RIGHT, fill=tk.Y, padx=(8, 0))
 
-        self.listbox_acoes = tk.Listbox(frame_lista_acoes, bg=self.cor_lista, fg=self.cor_texto,
+        self.listbox_acoes = tk.Listbox(frame_lista_acoes,
+                                         bg=self.cor_lista,
+                                         fg=self.cor_texto,
                                          selectbackground=self.cor_destaque,
                                          selectforeground="white",
-                                         height=18, width=28,
+                                         height=18,
+                                         width=28,
                                          yscrollcommand=scrollbar.set,
-                                         relief=tk.RIDGE, bd=1,
+                                         relief=tk.FLAT,
+                                         bd=1,
                                          highlightthickness=1,
-                                         highlightcolor=self.cor_destaque,
-                                         font=self.default_font)
+                                         highlightcolor=self.cor_borda_foco,
+                                         font=self.default_font,
+                                         activestyle='none')
         self.listbox_acoes.pack(side=tk.LEFT, fill=tk.BOTH, expand=True)
         scrollbar.config(command=self.listbox_acoes.yview)
 
@@ -779,77 +828,115 @@ Sua contribuição ajuda a manter o projeto ativo e a desenvolver novas funciona
         for acao in self.config["acoes"]:
             self.listbox_acoes.insert(tk.END, acao)
 
-        # Frame contador com estilo melhorado
+        # Frame contador com estilo moderno
         frame_contador_acoes = tk.Frame(frame_acoes, bg=self.cor_fundo_secundario)
-        frame_contador_acoes.pack(fill=tk.X, padx=0, pady=(0, 10))
+        frame_contador_acoes.pack(fill=tk.X, pady=(0, 10))
+
         self.lbl_contador_acoes = tk.Label(frame_contador_acoes, text="Ações: 0",
-                                          bg=self.cor_fundo_secundario, fg=self.cor_texto_secundario,
-                                          font=self.button_font)
+                                          bg=self.cor_fundo_secundario,
+                                          fg=self.cor_texto_secundario,
+                                          font=self.small_font)
         self.lbl_contador_acoes.pack(side=tk.LEFT)
 
-        # Frame controle com melhor layout
+        # Frame controle com layout moderno
         frame_controle_acoes = tk.Frame(frame_acoes, bg=self.cor_fundo_secundario)
-        frame_controle_acoes.pack(fill=tk.X, padx=0, pady=0)
+        frame_controle_acoes.pack(fill=tk.X)
 
-        self.entry_acao = tk.Entry(frame_controle_acoes, bg=self.cor_entrada, fg=self.cor_texto,
-                                  relief=tk.RIDGE, bd=1, highlightthickness=1,
-                                  highlightcolor=self.cor_destaque, font=self.default_font)
-        self.entry_acao.pack(side=tk.TOP, fill=tk.X, pady=(0, 8))
+        # Campo de entrada com design moderno
+        self.entry_acao = tk.Entry(frame_controle_acoes,
+                                  bg=self.cor_entrada,
+                                  fg=self.cor_texto,
+                                  relief=tk.FLAT,
+                                  bd=1,
+                                  highlightthickness=2,
+                                  highlightcolor=self.cor_borda_foco,
+                                  highlightbackground=self.cor_borda,
+                                  font=self.default_font,
+                                  insertbackground=self.cor_texto)
+        self.entry_acao.pack(fill=tk.X, pady=(0, 8))
         ToolTip(self.entry_acao, "Digite o código da ação (ex: PETR4)")
 
-        # Frame para botões
+        # Frame para botões com design moderno
         frame_botoes_acoes = tk.Frame(frame_controle_acoes, bg=self.cor_fundo_secundario)
         frame_botoes_acoes.pack(fill=tk.X)
 
-        btn_adicionar_acao = tk.Button(frame_botoes_acoes, text="➕ Adicionar", command=self.adicionar_acao,
-                                       bg=self.cor_botao, fg=self.cor_texto, font=self.button_font,
-                                       relief=tk.RIDGE, bd=1, padx=12, pady=6,
-                                       activebackground=self.cor_botao_hover)
-        btn_adicionar_acao.pack(side=tk.LEFT, fill=tk.X, expand=True, padx=(0, 4))
+        btn_adicionar_acao = tk.Button(frame_botoes_acoes,
+                                       text="➕  Adicionar",
+                                       command=self.adicionar_acao,
+                                       bg=self.cor_botao,
+                                       fg=self.cor_texto,
+                                       font=self.button_font,
+                                       relief=tk.FLAT,
+                                       bd=0,
+                                       padx=15,
+                                       pady=6,
+                                       activebackground=self.cor_botao_hover,
+                                       activeforeground=self.cor_texto,
+                                       cursor="hand2")
+        btn_adicionar_acao.pack(side=tk.LEFT, fill=tk.X, expand=True, padx=(0, 6))
         ToolTip(btn_adicionar_acao, "Adiciona uma nova ação à lista")
         btn_adicionar_acao.tooltip_shortcut = "Ctrl+A"
 
-        btn_remover_acao = tk.Button(frame_botoes_acoes, text="➖ Remover", command=self.remover_acao,
-                                     bg=self.cor_botao, fg=self.cor_texto, font=self.button_font,
-                                     relief=tk.RIDGE, bd=1, padx=12, pady=6,
-                                     activebackground=self.cor_botao_hover)
-        btn_remover_acao.pack(side=tk.LEFT, fill=tk.X, expand=True, padx=(4, 0))
+        btn_remover_acao = tk.Button(frame_botoes_acoes,
+                                     text="➖  Remover",
+                                     command=self.remover_acao,
+                                     bg=self.cor_botao,
+                                     fg=self.cor_texto,
+                                     font=self.button_font,
+                                     relief=tk.FLAT,
+                                     bd=0,
+                                     padx=15,
+                                     pady=6,
+                                     activebackground=self.cor_botao_hover,
+                                     activeforeground=self.cor_texto,
+                                     cursor="hand2")
+        btn_remover_acao.pack(side=tk.LEFT, fill=tk.X, expand=True, padx=(6, 0))
         ToolTip(btn_remover_acao, "Remove a ação selecionada da lista")
         btn_remover_acao.tooltip_shortcut = "Ctrl+R"
 
         return frame_acoes
 
     def _criar_frame_colunas_ui(self, parent_frame):
-        frame_colunas = tk.LabelFrame(parent_frame, text="🔧 Colunas Personalizadas",
+        """Cria o frame de colunas personalizadas com design moderno."""
+        frame_colunas = tk.LabelFrame(parent_frame, text="🔧  Colunas Personalizadas",
                                      bg=self.cor_fundo_secundario, fg=self.cor_texto,
-                                     font=self.title_font, relief=tk.RIDGE, bd=1,
+                                     font=self.title_font, relief=tk.FLAT, bd=2,
                                      highlightbackground=self.cor_borda, padx=15, pady=15)
-        frame_colunas.grid(row=0, column=1, padx=(10, 0), pady=0, sticky="nsew")
+        frame_colunas.grid(row=0, column=1, padx=(15, 0), pady=0, sticky="nsew")
 
-        frame_lista_colunas = tk.Frame(frame_colunas, bg=self.cor_fundo_secundario)
-        frame_lista_colunas.pack(fill=tk.BOTH, expand=True, padx=0, pady=(0, 15))
+        # Container para treeview com estilo moderno
+        container_tree = tk.Frame(frame_colunas, bg=self.cor_fundo_secundario)
+        container_tree.pack(fill=tk.BOTH, expand=True, pady=(0, 10))
+
+        frame_lista_colunas = tk.Frame(container_tree, bg=self.cor_fundo_secundario)
+        frame_lista_colunas.pack(fill=tk.BOTH, expand=True)
 
         self.tree_colunas = ttk.Treeview(frame_lista_colunas,
                                         columns=("Nome", "Tipo", "Seletor CSS", "Formato Excel"),
                                         show="headings", height=15, style="Custom.Treeview")
 
-        # Configurar cabeçalhos com ícones
-        self.tree_colunas.heading("Nome", text="📝 Nome")
-        self.tree_colunas.heading("Tipo", text="🔍 Tipo")
-        self.tree_colunas.heading("Seletor CSS", text="🎯 Seletor CSS")
-        self.tree_colunas.heading("Formato Excel", text="📊 Formato Excel")
+        # Configurar cabeçalhos com ícones e melhor tipografia
+        self.tree_colunas.heading("Nome", text="📝  Nome")
+        self.tree_colunas.heading("Tipo", text="🔍  Tipo")
+        self.tree_colunas.heading("Seletor CSS", text="🎯  Seletor CSS")
+        self.tree_colunas.heading("Formato Excel", text="📊  Formato Excel")
 
-        # Ajustar larguras das colunas
-        self.tree_colunas.column("Nome", width=130, minwidth=100)
-        self.tree_colunas.column("Tipo", width=80, minwidth=70)
-        self.tree_colunas.column("Seletor CSS", width=280, minwidth=200)
-        self.tree_colunas.column("Formato Excel", width=120, minwidth=100)
+        # Ajustar larguras das colunas com proporções melhores
+        self.tree_colunas.column("Nome", width=140, minwidth=110)
+        self.tree_colunas.column("Tipo", width=90, minwidth=80)
+        self.tree_colunas.column("Seletor CSS", width=300, minwidth=220)
+        self.tree_colunas.column("Formato Excel", width=130, minwidth=110)
 
-        scrollbar_colunas = tk.Scrollbar(frame_lista_colunas, command=self.tree_colunas.yview,
-                                        bg=self.cor_botao, troughcolor=self.cor_fundo_secundario, width=16)
+        # Scrollbar moderno
+        scrollbar_colunas = tk.Scrollbar(frame_lista_colunas,
+                                        command=self.tree_colunas.yview,
+                                        bg=self.cor_botao,
+                                        troughcolor=self.cor_fundo_terciario,
+                                        activebackground=self.cor_botao_hover,
+                                        width=14)
         self.tree_colunas.configure(yscrollcommand=scrollbar_colunas.set)
 
-        scrollbar_colunas.pack(side=tk.RIGHT, fill=tk.Y, padx=(5, 0))
+        scrollbar_colunas.pack(side=tk.RIGHT, fill=tk.Y, padx=(8, 0))
         self.tree_colunas.pack(side=tk.LEFT, fill=tk.BOTH, expand=True)
         ToolTip(self.tree_colunas, "Lista de colunas personalizadas para extração\nDuplo clique para editar")
         self.tree_colunas.tooltip_shortcut = "Ctrl+N para adicionar, Del para excluir"
@@ -859,179 +946,301 @@ Sua contribuição ajuda a manter o projeto ativo e a desenvolver novas funciona
                                                         coluna.get("seletor_css", ""),
                                                         coluna.get("formato_excel", "Texto")))
 
-        # Frame para botões com melhor organização
+        # Frame para botões com design moderno
         frame_botoes_colunas = tk.Frame(frame_colunas, bg=self.cor_fundo_secundario)
-        frame_botoes_colunas.pack(fill=tk.X, padx=0, pady=0)
+        frame_botoes_colunas.pack(fill=tk.X)
 
-        # Primeira linha de botões
+        # Primeira linha de botões - ações principais
         frame_botoes_linha1 = tk.Frame(frame_botoes_colunas, bg=self.cor_fundo_secundario)
         frame_botoes_linha1.pack(fill=tk.X, pady=(0, 8))
 
-        btn_adicionar_coluna = tk.Button(frame_botoes_linha1, text="➕ Adicionar", command=self.adicionar_coluna,
-                                        bg=self.cor_botao, fg=self.cor_texto, font=self.button_font,
-                                        relief=tk.RIDGE, bd=1, padx=10, pady=6,
-                                        activebackground=self.cor_botao_hover)
-        btn_adicionar_coluna.pack(side=tk.LEFT, fill=tk.X, expand=True, padx=(0, 4))
+        btn_adicionar_coluna = tk.Button(frame_botoes_linha1,
+                                        text="➕  Adicionar",
+                                        command=self.adicionar_coluna,
+                                        bg=self.cor_botao,
+                                        fg=self.cor_texto,
+                                        font=self.button_font,
+                                        relief=tk.FLAT,
+                                        bd=0,
+                                        padx=12,
+                                        pady=6,
+                                        activebackground=self.cor_botao_hover,
+                                        activeforeground=self.cor_texto,
+                                        cursor="hand2")
+        btn_adicionar_coluna.pack(side=tk.LEFT, fill=tk.X, expand=True, padx=(0, 6))
         ToolTip(btn_adicionar_coluna, "Adiciona uma nova coluna personalizada")
         btn_adicionar_coluna.tooltip_shortcut = "Ctrl+N"
 
-        btn_editar_coluna = tk.Button(frame_botoes_linha1, text="✏️ Editar", command=self.editar_coluna,
-                                     bg=self.cor_botao, fg=self.cor_texto, font=self.button_font,
-                                     relief=tk.RIDGE, bd=1, padx=10, pady=6,
-                                     activebackground=self.cor_botao_hover)
-        btn_editar_coluna.pack(side=tk.LEFT, fill=tk.X, expand=True, padx=(4, 4))
+        btn_editar_coluna = tk.Button(frame_botoes_linha1,
+                                     text="✏️  Editar",
+                                     command=self.editar_coluna,
+                                     bg=self.cor_botao,
+                                     fg=self.cor_texto,
+                                     font=self.button_font,
+                                     relief=tk.FLAT,
+                                     bd=0,
+                                     padx=12,
+                                     pady=6,
+                                     activebackground=self.cor_botao_hover,
+                                     activeforeground=self.cor_texto,
+                                     cursor="hand2")
+        btn_editar_coluna.pack(side=tk.LEFT, fill=tk.X, expand=True, padx=(6, 6))
         ToolTip(btn_editar_coluna, "Edita a coluna selecionada")
 
-        btn_excluir_coluna = tk.Button(frame_botoes_linha1, text="🗑️ Excluir", command=self.excluir_coluna,
-                                      bg=self.cor_botao, fg=self.cor_texto, font=self.button_font,
-                                      relief=tk.RIDGE, bd=1, padx=10, pady=6,
-                                      activebackground=self.cor_botao_hover)
-        btn_excluir_coluna.pack(side=tk.LEFT, fill=tk.X, expand=True, padx=(4, 0))
+        btn_excluir_coluna = tk.Button(frame_botoes_linha1,
+                                      text="🗑️  Excluir",
+                                      command=self.excluir_coluna,
+                                      bg=self.cor_botao,
+                                      fg=self.cor_texto,
+                                      font=self.button_font,
+                                      relief=tk.FLAT,
+                                      bd=0,
+                                      padx=12,
+                                      pady=6,
+                                      activebackground=self.cor_botao_hover,
+                                      activeforeground=self.cor_texto,
+                                      cursor="hand2")
+        btn_excluir_coluna.pack(side=tk.LEFT, fill=tk.X, expand=True, padx=(6, 0))
         ToolTip(btn_excluir_coluna, "Exclui a coluna selecionada")
         btn_excluir_coluna.tooltip_shortcut = "Del"
 
-        # Segunda linha de botões (movimentação)
+        # Segunda linha de botões - movimentação
         frame_botoes_linha2 = tk.Frame(frame_botoes_colunas, bg=self.cor_fundo_secundario)
         frame_botoes_linha2.pack(fill=tk.X)
 
-        btn_mover_cima = tk.Button(frame_botoes_linha2, text="⬆️ Mover Acima", command=lambda: self.mover_coluna(-1),
-                                  bg=self.cor_botao, fg=self.cor_texto, font=self.button_font,
-                                  relief=tk.RIDGE, bd=1, padx=10, pady=6,
-                                  activebackground=self.cor_botao_hover)
-        btn_mover_cima.pack(side=tk.LEFT, fill=tk.X, expand=True, padx=(0, 4))
+        btn_mover_cima = tk.Button(frame_botoes_linha2,
+                                  text="⬆️  Mover Acima",
+                                  command=lambda: self.mover_coluna(-1),
+                                  bg=self.cor_botao,
+                                  fg=self.cor_texto,
+                                  font=self.button_font,
+                                  relief=tk.FLAT,
+                                  bd=0,
+                                  padx=12,
+                                  pady=6,
+                                  activebackground=self.cor_botao_hover,
+                                  activeforeground=self.cor_texto,
+                                  cursor="hand2")
+        btn_mover_cima.pack(side=tk.LEFT, fill=tk.X, expand=True, padx=(0, 6))
         ToolTip(btn_mover_cima, "Move a coluna selecionada para cima")
 
-        btn_mover_baixo = tk.Button(frame_botoes_linha2, text="⬇️ Mover Abaixo", command=lambda: self.mover_coluna(1),
-                                   bg=self.cor_botao, fg=self.cor_texto, font=self.button_font,
-                                   relief=tk.RIDGE, bd=1, padx=10, pady=6,
-                                   activebackground=self.cor_botao_hover)
-        btn_mover_baixo.pack(side=tk.LEFT, fill=tk.X, expand=True, padx=(4, 0))
+        btn_mover_baixo = tk.Button(frame_botoes_linha2,
+                                   text="⬇️  Mover Abaixo",
+                                   command=lambda: self.mover_coluna(1),
+                                   bg=self.cor_botao,
+                                   fg=self.cor_texto,
+                                   font=self.button_font,
+                                   relief=tk.FLAT,
+                                   bd=0,
+                                   padx=12,
+                                   pady=6,
+                                   activebackground=self.cor_botao_hover,
+                                   activeforeground=self.cor_texto,
+                                   cursor="hand2")
+        btn_mover_baixo.pack(side=tk.LEFT, fill=tk.X, expand=True, padx=(6, 0))
         ToolTip(btn_mover_baixo, "Move a coluna selecionada para baixo")
 
         return frame_colunas
 
     def _criar_frame_opcoes_e_botoes_ui(self, parent_tab):
+        """Cria o frame de opções e botões principais com design moderno."""
         frame_opcoes = tk.Frame(parent_tab, bg=self.cor_fundo_secundario)
-        frame_opcoes.pack(fill=tk.X, padx=20, pady=0)
+        frame_opcoes.pack(fill=tk.X, pady=(0, 0))
 
-        # Frame para opções de configuração
-        frame_opcoes_config = tk.LabelFrame(frame_opcoes, text="⚙️ Opções",
+        # Frame para opções de configuração com design elegante
+        frame_opcoes_config = tk.LabelFrame(frame_opcoes, text="⚙️  Opções",
                                            bg=self.cor_fundo_secundario, fg=self.cor_texto,
-                                           font=self.title_font, relief=tk.RIDGE, bd=1,
-                                           highlightbackground=self.cor_borda, padx=15, pady=10)
+                                           font=self.title_font, relief=tk.FLAT, bd=2,
+                                           highlightbackground=self.cor_borda, padx=12, pady=5)
         frame_opcoes_config.pack(side=tk.LEFT, fill=tk.X, expand=True, padx=(0, 15))
 
+        # Checkbox com estilo moderno
         self.var_headless = tk.BooleanVar(value=self.config["headless"])
-        chk_headless = tk.Checkbutton(frame_opcoes_config, text="🚫 Headless (sem interface)",
-                                     variable=self.var_headless, bg=self.cor_fundo_secundario,
-                                     fg=self.cor_texto, selectcolor=self.cor_entrada,
+        chk_headless = tk.Checkbutton(frame_opcoes_config,
+                                     text="🚫  Headless (sem interface)",
+                                     variable=self.var_headless,
+                                     bg=self.cor_fundo_secundario,
+                                     fg=self.cor_texto,
+                                     selectcolor=self.cor_entrada,
                                      activebackground=self.cor_fundo_secundario,
-                                     activeforeground=self.cor_texto, font=self.default_font)
-        chk_headless.pack(anchor=tk.W, pady=(0, 8))
+                                     activeforeground=self.cor_texto,
+                                     font=self.default_font,
+                                     cursor="hand2")
+        chk_headless.pack(anchor=tk.W, pady=(0, 5))
         ToolTip(chk_headless, "Executa o navegador em modo headless (sem interface gráfica)")
 
-        btn_tema = tk.Button(frame_opcoes_config, text="🎨 Alternar Tema", command=self.alternar_tema,
-                            bg=self.cor_botao, fg=self.cor_texto, font=self.button_font,
-                            relief=tk.RIDGE, bd=1, padx=15, pady=8,
-                            activebackground=self.cor_botao_hover)
-        btn_tema.pack(fill=tk.X)
+        # Botão tema com design moderno
+        btn_tema = tk.Button(frame_opcoes_config,
+                            text="🎨  Alternar Tema",
+                            command=self.alternar_tema,
+                            bg=self.cor_botao,
+                            fg=self.cor_texto,
+                            font=self.button_font,
+                            relief=tk.FLAT,
+                            bd=0,
+                            padx=20,
+                            pady=8,
+                            activebackground=self.cor_botao_hover,
+                            activeforeground=self.cor_texto,
+                            cursor="hand2")
+        btn_tema.pack(fill=tk.X, pady=(0, 5))
         ToolTip(btn_tema, "Alterna entre tema claro e escuro")
         btn_tema.tooltip_shortcut = "Ctrl+T"
 
-        # Frame para ações principais
+        # Adicionar barra de status abaixo do botão de tema
+        self.criar_barra_status(frame_opcoes_config)
+
+        # Frame para ações principais com melhor layout
         frame_acoes_principais = tk.Frame(frame_opcoes, bg=self.cor_fundo_secundario)
         frame_acoes_principais.pack(side=tk.RIGHT)
 
-        # Frame para botões de configuração (coluna)
+        # Frame para botões de configuração com design vertical
         frame_config_botoes = tk.Frame(frame_acoes_principais, bg=self.cor_fundo_secundario)
         frame_config_botoes.pack(side=tk.LEFT, padx=(0, 15))
 
-        btn_salvar = tk.Button(frame_config_botoes, text="💾 Salvar Configurações",
+        btn_salvar = tk.Button(frame_config_botoes,
+                              text="💾  Salvar Configurações",
                               command=self.salvar_configuracoes,
-                              bg=self.cor_botao, fg=self.cor_texto, font=self.button_font,
-                              relief=tk.RIDGE, bd=1, padx=15, pady=8, width=20,
-                              activebackground=self.cor_botao_hover)
-        btn_salvar.pack(fill=tk.X, pady=(0, 8))
+                              bg=self.cor_botao,
+                              fg=self.cor_texto,
+                              font=self.button_font,
+                              relief=tk.FLAT,
+                              bd=0,
+                              padx=15,
+                              pady=6,
+                              width=22,
+                              activebackground=self.cor_botao_hover,
+                              activeforeground=self.cor_texto,
+                              cursor="hand2")
+        btn_salvar.pack(fill=tk.X, pady=(0, 3))
         ToolTip(btn_salvar, "Salva as configurações atuais")
         btn_salvar.tooltip_shortcut = "Ctrl+S"
 
-        btn_fechar = tk.Button(frame_config_botoes, text="❌ Fechar Aplicação",
+        btn_fechar = tk.Button(frame_config_botoes,
+                               text="❌  Fechar Aplicação",
                                command=self.root.destroy,
-                               bg=self.cor_botao, fg=self.cor_texto, font=self.button_font,
-                               relief=tk.RIDGE, bd=1, padx=15, pady=8, width=20,
-                               activebackground=self.cor_botao_hover)
+                               bg=self.cor_botao,
+                               fg=self.cor_texto,
+                               font=self.button_font,
+                               relief=tk.FLAT,
+                               bd=0,
+                               padx=15,
+                               pady=6,
+                               width=22,
+                               activebackground=self.cor_botao_hover,
+                               activeforeground=self.cor_texto,
+                               cursor="hand2")
         btn_fechar.pack(fill=tk.X)
         ToolTip(btn_fechar, "Fecha a aplicação")
         btn_fechar.tooltip_shortcut = "Ctrl+Q"
 
-        # Botão principal de extração - mais destacado
-        btn_extrair = tk.Button(frame_acoes_principais, text="🚀 EXTRAIR DADOS",
+        # Botão principal de extração com destaque especial
+        btn_extrair = tk.Button(frame_acoes_principais,
+                               text="🚀  EXTRAIR DADOS",
                                command=self.start_combined_extraction,
-                               bg=self.cor_botao_ativo, fg="white", font=self.title_font,
-                               relief=tk.RIDGE, bd=2, padx=25, pady=15, width=20,
-                               activebackground="#4a6984", cursor="hand2")
+                               bg=self.cor_botao_ativo,
+                               fg="white",
+                               font=self.large_button_font,
+                               relief=tk.FLAT,
+                               bd=0,
+                               padx=20,
+                               pady=12,
+                               width=18,
+                               activebackground=self.cor_botao_ativo_hover,
+                               activeforeground="white",
+                               cursor="hand2")
         btn_extrair.pack(side=tk.RIGHT)
         ToolTip(btn_extrair, "Inicia a extração de dados de ações e carteiras")
         btn_extrair.tooltip_shortcut = "Ctrl+E"
 
         return frame_opcoes
 
-    def criar_barra_status(self):
-        """Cria a barra de status com progresso e ícones melhorados."""
-        # Frame principal para barra de status com estilo melhorado
-        self.frame_status = tk.Frame(self.root, bg=self.cor_fundo_secundario,
-                                    relief=tk.RIDGE, bd=1, height=40)
-        self.frame_status.pack(fill=tk.X, side=tk.BOTTOM, padx=15, pady=(0, 15))
+    def criar_barra_status(self, parent_frame=None):
+        """Cria a barra de status com design moderno e elegante."""
+        if parent_frame is None:
+            parent_frame = self.root
+
+        # Frame principal para barra de status com estilo moderno
+        status_bg_color = self.cor_fundo_terciario if parent_frame == self.root else self.cor_fundo_secundario
+        self.frame_status = tk.Frame(parent_frame, bg=status_bg_color,
+                                    relief=tk.FLAT, bd=1, height=30)
+        if parent_frame == self.root:
+            self.frame_status.pack(fill=tk.X, side=tk.TOP, padx=20, pady=(5, 0))
+        else:
+            self.frame_status.pack(fill=tk.X, pady=(10, 5))
         self.frame_status.pack_propagate(False)  # Manter altura fixa
 
         # Frame interno para conteúdo da barra de status
-        frame_interno = tk.Frame(self.frame_status, bg=self.cor_fundo_secundario)
-        frame_interno.pack(fill=tk.BOTH, expand=True, padx=15, pady=8)
+        frame_interno = tk.Frame(self.frame_status, bg=status_bg_color)
+        if parent_frame == self.root:
+            frame_interno.pack(fill=tk.BOTH, expand=True, padx=15, pady=4)
+        else:
+            frame_interno.pack(fill=tk.BOTH, expand=True, padx=8, pady=3)
 
-        # Ícone de status
-        self.lbl_icone_status = tk.Label(frame_interno, text="ℹ️", bg=self.cor_fundo_secundario,
-                                        fg=self.cor_texto, font=self.button_font)
-        self.lbl_icone_status.pack(side=tk.LEFT, padx=(0, 8))
+        # Container à esquerda para ícone e status
+        frame_status_info = tk.Frame(frame_interno, bg=status_bg_color)
+        frame_status_info.pack(side=tk.LEFT, fill=tk.X, expand=True)
 
-        # Label para mensagens de status
-        self.lbl_status = tk.Label(frame_interno, text="Pronto para iniciar",
-                                   bg=self.cor_fundo_secundario, fg=self.cor_texto,
-                                   anchor=tk.W, font=self.default_font)
+        # Ícone de status com melhor design
+        self.lbl_icone_status = tk.Label(frame_status_info, text="ℹ️",
+                                        bg=status_bg_color,
+                                        fg=self.cor_texto,
+                                        font=self.default_font)
+        self.lbl_icone_status.pack(side=tk.LEFT, padx=(0, 12))
+
+        # Label para mensagens de status com melhor tipografia
+        self.lbl_status = tk.Label(frame_status_info, text="✨ Pronto para iniciar",
+                                   bg=status_bg_color,
+                                   fg=self.cor_texto,
+                                   anchor=tk.W,
+                                   font=self.default_font)
         self.lbl_status.pack(side=tk.LEFT, fill=tk.X, expand=True)
 
-        # Frame para progresso
-        frame_progresso = tk.Frame(frame_interno, bg=self.cor_fundo_secundario)
-        frame_progresso.pack(side=tk.RIGHT, padx=(10, 0))
+        # Frame para progresso com design moderno
+        frame_progresso = tk.Frame(frame_interno, bg=status_bg_color)
+        frame_progresso.pack(side=tk.RIGHT, padx=(15, 0))
 
-        # Label para mostrar a porcentagem
+        # Label para mostrar a porcentagem com estilo moderno
         self.lbl_porcentagem = tk.Label(frame_progresso, text="0%",
-                                       bg=self.cor_fundo_secundario, fg=self.cor_texto_secundario,
-                                       font=self.button_font, width=5)
-        self.lbl_porcentagem.pack(side=tk.RIGHT, padx=(8, 0))
+                                       bg=status_bg_color,
+                                       fg=self.cor_texto_secundario,
+                                       font=self.small_font,
+                                       width=6)
+        self.lbl_porcentagem.pack(side=tk.RIGHT, padx=(12, 0))
 
-        # Barra de progresso com estilo melhorado
-        self.barra_progresso = ttk.Progressbar(frame_progresso, orient=tk.HORIZONTAL,
-                                              length=180, mode="determinate",
+        # Barra de progresso com estilo moderno melhorado
+        self.barra_progresso = ttk.Progressbar(frame_progresso,
+                                              orient=tk.HORIZONTAL,
+                                              length=200,
+                                              mode="determinate",
                                               style="green.Horizontal.TProgressbar")
         self.barra_progresso.pack(side=tk.RIGHT)
 
-        # Botão de cancelamento (inicialmente oculto)
-        self.btn_cancelar_extracao = tk.Button(frame_interno, text="❌ Cancelar Extração",
+        # Botão de cancelamento com design moderno (inicialmente oculto)
+        self.btn_cancelar_extracao = tk.Button(frame_interno,
+                                             text="❌  Cancelar Extração",
                                              command=self.cancelar_extracao_atual,
-                                             bg=self.cor_erro, fg="white", font=self.button_font,
-                                             relief=tk.RIDGE, bd=1, padx=10, pady=6,
-                                             activebackground="#c62a2a")
+                                             bg=self.cor_erro,
+                                             fg="white",
+                                             font=self.button_font,
+                                             relief=tk.FLAT,
+                                             bd=0,
+                                             padx=15,
+                                             pady=6,
+                                             activebackground="#dc2626",
+                                             activeforeground="white",
+                                             cursor="hand2")
         # Inicialmente oculto
         self.btn_cancelar_extracao.pack_forget()
 
-        # Adicionar tooltips melhorados
+        # Adicionar tooltips aprimorados
         ToolTip(self.lbl_status, "Mostra o status atual da operação em tempo real")
         ToolTip(self.barra_progresso, "Indica o progresso da operação atual")
         ToolTip(self.lbl_porcentagem, "Porcentagem de conclusão da operação")
         ToolTip(self.btn_cancelar_extracao, "Cancela a extração de dados em andamento")
 
     def atualizar_status(self, mensagem, progresso=None):
-        """Atualiza a mensagem de status e a barra de progresso de forma thread-safe."""
+        """Atualiza a mensagem de status e a barra de progresso de forma thread-safe com feedback visual melhorado."""
         def _atualizar():
             try:
                 self.lbl_status.config(text=mensagem)
@@ -1039,13 +1248,35 @@ Sua contribuição ajuda a manter o projeto ativo e a desenvolver novas funciona
                 if progresso is not None:
                     self.barra_progresso["value"] = progresso
                     self.lbl_porcentagem.config(text=f"{int(progresso)}%")
-                    # Atualizar a cor da barra de progresso baseado no valor
-                    if progresso < 30:
+
+                    # Atualizar a cor da barra de progresso e ícone baseado no valor
+                    if progresso == 0:
                         self.barra_progresso["style"] = "red.Horizontal.TProgressbar"
+                        self.lbl_icone_status.config(text="⏸️")
+                    elif progresso < 30:
+                        self.barra_progresso["style"] = "red.Horizontal.TProgressbar"
+                        self.lbl_icone_status.config(text="🔄")
                     elif progresso < 70:
                         self.barra_progresso["style"] = "yellow.Horizontal.TProgressbar"
+                        self.lbl_icone_status.config(text="⚡")
+                    elif progresso < 100:
+                        self.barra_progresso["style"] = "green.Horizontal.TProgressbar"
+                        self.lbl_icone_status.config(text="🚀")
                     else:
                         self.barra_progresso["style"] = "green.Horizontal.TProgressbar"
+                        self.lbl_icone_status.config(text="✅")
+                else:
+                    # Definir ícone baseado no tipo de mensagem quando não há progresso
+                    if "erro" in mensagem.lower() or "❌" in mensagem:
+                        self.lbl_icone_status.config(text="❌")
+                    elif "sucesso" in mensagem.lower() or "✅" in mensagem:
+                        self.lbl_icone_status.config(text="✅")
+                    elif "cancelado" in mensagem.lower() or "⏳" in mensagem:
+                        self.lbl_icone_status.config(text="⏹️")
+                    elif "pronto" in mensagem.lower() or "✨" in mensagem:
+                        self.lbl_icone_status.config(text="✨")
+                    else:
+                        self.lbl_icone_status.config(text="ℹ️")
 
                 self.root.update_idletasks()
             except Exception as e:
@@ -1065,13 +1296,13 @@ Sua contribuição ajuda a manter o projeto ativo e a desenvolver novas funciona
         if self.extracao_em_andamento:
             self.cancelar_extracao.set()
             self.atualizar_status("Cancelamento solicitado... Aguardando finalização segura.", 0)
-            self.btn_cancelar_extracao.config(state='disabled', text="⏳ Cancelando...")
+            self.btn_cancelar_extracao.config(state='disabled', text="⏳  Cancelando...")
 
     def mostrar_botao_cancelar(self):
         """Mostra o botão de cancelar extração."""
         self.extracao_em_andamento = True
         self.cancelar_extracao.clear()
-        self.btn_cancelar_extracao.config(state='normal', text="❌ Cancelar Extração")
+        self.btn_cancelar_extracao.config(state='normal', text="❌  Cancelar Extração")
         self.btn_cancelar_extracao.pack(side=tk.RIGHT, padx=(10, 0))
 
     def ocultar_botao_cancelar(self):
@@ -1096,7 +1327,7 @@ Sua contribuição ajuda a manter o projeto ativo e a desenvolver novas funciona
             self.config["acoes"].append(acao)
             self.listbox_acoes.insert(tk.END, acao)
             self.atualizar_contador_acoes()
-            self.atualizar_status(f"Ação {acao} adicionada com sucesso!", 100)
+            self.atualizar_status(f"✅ Ação {acao} adicionada com sucesso!", 100)
         else:
             messagebox.showinfo("Informação", f"A ação '{acao}' já existe na lista.")
 
@@ -1119,7 +1350,7 @@ Sua contribuição ajuda a manter o projeto ativo e a desenvolver novas funciona
             self.listbox_acoes.delete(indice_selecionado)
             self.config["acoes"].remove(acao)
             self.atualizar_contador_acoes()
-            self.atualizar_status(f"Ação {acao} removida com sucesso!", 100)
+            self.atualizar_status(f"🗑️ Ação {acao} removida com sucesso!", 100)
         except (IndexError, ValueError):
             messagebox.showwarning("Aviso", "Selecione uma ação para remover ou ação não encontrada na configuração.")
 
@@ -1132,7 +1363,7 @@ Sua contribuição ajuda a manter o projeto ativo e a desenvolver novas funciona
         self.tema_escuro = not self.tema_escuro
         self.aplicar_tema()
         self.configurar_estilos_ttk()  # Reconfigurar estilos TTK com as novas cores
-        self.atualizar_status(f"Tema alterado para {'escuro' if self.tema_escuro else 'claro'}", 100)
+        self.atualizar_status(f"🎨 Tema alterado para {'escuro' if self.tema_escuro else 'claro'}", 100)
 
         # Recriar interface para aplicar o tema
         for widget in self.root.winfo_children():
@@ -1151,10 +1382,10 @@ Sua contribuição ajuda a manter o projeto ativo e a desenvolver novas funciona
             self.salvar_config()
 
             if mostrar_mensagem:
-                self.atualizar_status("Configurações salvas com sucesso!", 100)
+                self.atualizar_status("💾 Configurações salvas com sucesso!", 100)
                 messagebox.showinfo("Informação", "Configurações salvas com sucesso!")
         except Exception as e:
-            self.atualizar_status(f"Erro ao salvar configurações: {str(e)}", 0)
+            self.atualizar_status(f"❌ Erro ao salvar configurações: {str(e)}", 0)
             messagebox.showerror("Erro", f"Erro ao salvar configurações: {str(e)}")
 
     def start_combined_extraction(self):
