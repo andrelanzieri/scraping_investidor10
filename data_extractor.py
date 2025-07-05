@@ -1,6 +1,7 @@
 import json
-from tkinter import messagebox, filedialog
+from tkinter import messagebox
 from selenium import webdriver
+from selenium.common.exceptions import (NoSuchElementException, TimeoutException, WebDriverException)
 from selenium.webdriver.chrome.service import Service
 from selenium.webdriver.chrome.options import Options
 from selenium.webdriver.common.by import By
@@ -9,7 +10,6 @@ from selenium.webdriver.support import expected_conditions as EC
 import pandas as pd
 from webdriver_manager.chrome import ChromeDriverManager
 import os
-import subprocess
 import threading
 import time
 import logging
@@ -31,7 +31,7 @@ class DataExtractor:
     """
     Classe responsável por toda a lógica de extração de dados do site Investidor10.
     Inclui configuração do WebDriver, extração de dados de ações e carteiras,
-    processamento de seletores CSS e exportação para Excel.
+    e processamento de seletores CSS.
     """
 
     def __init__(self, config, status_callback=None, cancelamento_event=None):
@@ -147,9 +147,9 @@ class DataExtractor:
             self.driver.implicitly_wait(5)
             return self.driver
 
-        except Exception as e:
+        except WebDriverException as e:
             logger.error(f"Erro ao inicializar Chrome: {e}")
-            self.status_callback(f"Erro ao inicializar Chrome: {e}", 0)
+            self.status_callback(f"Erro de WebDriver: {e}", 0)
             # Fallback: tenta sem ChromeDriverManager
             try:
                 self.status_callback("Tentando fallback sem ChromeDriverManager...", 5)
@@ -159,7 +159,7 @@ class DataExtractor:
                 self._apply_anti_detection_scripts()
                 self.driver.implicitly_wait(5)
                 return self.driver
-            except Exception as e2:
+            except WebDriverException as e2:
                 logger.error(f"Fallback também falhou: {e2}")
                 raise Exception(f"Falha ao inicializar Chrome. Erro principal: {e}. Erro fallback: {e2}")
 
@@ -214,19 +214,34 @@ class DataExtractor:
             progresso_atual = progresso_base_acoes + (i * progresso_por_acao)
             self.status_callback(f"Processando ação {acao} ({i+1}/{total_acoes})...", int(progresso_atual))
 
-            try:
-                url = f"https://investidor10.com.br/acoes/{acao}/"
-                self.driver.get(url)
-                WebDriverWait(self.driver, DEFAULT_WAIT_TIME).until(
-                    EC.presence_of_element_located((By.TAG_NAME, "body"))
-                )
-                resultado_acao = {"Ticker": acao, "Origem": "Ação"}
-                if colunas_personalizadas:
-                    self.extrair_colunas_personalizadas_otimizado(colunas_personalizadas, resultado_acao)
-                dados_acoes.append(resultado_acao)
-            except Exception as e:
-                messagebox.showwarning("Erro Ação", f"Erro ao processar ação {acao}: {str(e)}")
-                dados_acoes.append({"Ticker": acao, "Origem": "Ação", "Erro": str(e)})
+            for tentativa in range(MAX_RETRY_ATTEMPTS):
+                try:
+                    url = f"https://investidor10.com.br/acoes/{acao}/"
+                    self.driver.get(url)
+                    WebDriverWait(self.driver, DEFAULT_WAIT_TIME).until(
+                        EC.presence_of_element_located((By.TAG_NAME, "body"))
+                    )
+                    resultado_acao = {"Ticker": acao, "Origem": "Ação"}
+                    if colunas_personalizadas:
+                        self.extrair_colunas_personalizadas_otimizado(colunas_personalizadas, resultado_acao)
+                    dados_acoes.append(resultado_acao)
+                    break  # Sucesso, vai para a próxima ação
+                except (TimeoutException, NoSuchElementException) as e:
+                    if tentativa < MAX_RETRY_ATTEMPTS - 1:
+                        self.status_callback(f"Tentativa {tentativa + 1} falhou para {acao}, tentando novamente...", int(progresso_atual))
+                        time.sleep(RETRY_DELAY)
+                        continue
+                    else:
+                        messagebox.showwarning("Erro de Extração", f"Não foi possível carregar a página da ação {acao}. Verifique o ticker e sua conexão.")
+                        dados_acoes.append({"Ticker": acao, "Origem": "Ação", "Erro": "Página não carregou"})
+                except Exception as e:
+                    if tentativa < MAX_RETRY_ATTEMPTS - 1:
+                        self.status_callback(f"Tentativa {tentativa + 1} falhou para {acao}, tentando novamente...", int(progresso_atual))
+                        time.sleep(RETRY_DELAY)
+                        continue
+                    else:
+                        messagebox.showwarning("Erro Ação", f"Erro ao processar ação {acao}: {str(e)}")
+                        dados_acoes.append({"Ticker": acao, "Origem": "Ação", "Erro": str(e)})
 
         self.status_callback("Extração de dados de AÇÕES concluída.", 60)
         return dados_acoes
@@ -254,7 +269,7 @@ class DataExtractor:
                 # Navega para a página com retry
                 try:
                     self.driver.get("https://investidor10.com.br/carteiras/resumo/")
-                except Exception as nav_error:
+                except WebDriverException as nav_error:
                     self.status_callback(f"Erro de navegação: {nav_error}", 70)
                     if tentativa < MAX_RETRY_ATTEMPTS - 1:
                         time.sleep(RETRY_DELAY)
@@ -269,10 +284,9 @@ class DataExtractor:
                 # Aguarda carregamento da página com múltiplos seletores
                 self.status_callback("Aguardando carregamento da página...", 72)
                 seletores_espera = [
-                    "#Ticker-tickers_wrapper > div:nth-child(3)"
-                    #"#Ticker-tickers_wrapper",
-                    #"#Ticker-tickers",
-                    #".table-responsive"
+                    "#Ticker-tickers_wrapper > div:nth-child(3)",
+                    "#Ticker-tickers",
+                    ".table-responsive"
                 ]
 
                 elemento_encontrado = None
@@ -282,8 +296,8 @@ class DataExtractor:
                             EC.presence_of_element_located((By.CSS_SELECTOR, seletor))
                         )
                         break
-                    except Exception as e:
-                        logger.debug(f"Seletor {seletor} não encontrado: {e}")
+                    except TimeoutException:
+                        logger.debug(f"Seletor {seletor} não encontrado: Timeout")
                         continue
 
                 if not elemento_encontrado:
@@ -328,7 +342,7 @@ class DataExtractor:
                 self.status_callback("Extração de dados de CARTEIRAS concluída.", 90)
                 break  # Sucesso, sai do loop de tentativas
 
-            except Exception as e:
+            except WebDriverException as e:
                 error_msg = str(e)
                 self.status_callback(f"Erro na tentativa {tentativa + 1}: {error_msg[:50]}...", 75)
 
@@ -349,7 +363,6 @@ class DataExtractor:
                 else:
                     # Última tentativa falhou - apenas registra no status, não exibe erro ao usuário
                     self.status_callback("Não foi possível extrair dados de carteiras. Continuando apenas com ações...", 85)
-                    # Não exibe messagebox.showerror aqui
 
         return dados_carteiras
 
@@ -553,14 +566,14 @@ class DataExtractor:
         Returns:
             str: Valor extraído da célula ou "N/A"
         """
-        linha_match = re.search(r'tr[^>]*nth-child\((\d+)\)', seletor_css)
-        coluna_match = re.search(r'(?:td|th)[^>]*nth-child\((\d+)\)', seletor_css)
+        linha_match = re.search(r'tr[^>]*nth-child\\((\\d+)\\)', seletor_css)
+        coluna_match = re.search(r'(?:td|th)[^>]*nth-child\\((\\d+)\\)', seletor_css)
 
         linha = int(linha_match.group(1)) if linha_match else 1
         coluna = int(coluna_match.group(1)) if coluna_match else 1
 
         classe_linha = None
-        classe_match = re.search(r'tr\.([a-zA-Z0-9_-]+)', seletor_css)
+        classe_match = re.search(r'tr\\.([a-zA-Z0-9_-]+)', seletor_css)
         if classe_match:
             classe_linha = classe_match.group(1)
 
@@ -742,123 +755,6 @@ class DataExtractor:
         except Exception as e:
             logger.error(f"Erro no fallback de extração de tabela: {str(e)}")
             return []
-
-    def export_to_excel(self, df_acoes, df_carteiras):
-        """Exporta os dados para Excel com formatação adequada."""
-        if df_acoes.empty and df_carteiras.empty:
-            messagebox.showwarning("Aviso", "Não há dados para exportar (nem ações, nem carteiras)")
-            return
-
-        try:
-            filepath = filedialog.asksaveasfilename(
-                defaultextension=".xlsx",
-                filetypes=[("Excel files", "*.xlsx"), ("All files", "*.*")],
-                title="Salvar dados como"
-            )
-
-            if not filepath:
-                return
-
-            df_acoes_export = df_acoes.copy() if not df_acoes.empty else pd.DataFrame()
-            df_carteiras_export = df_carteiras.copy() if not df_carteiras.empty else pd.DataFrame()
-
-            if not df_acoes_export.empty and "Origem" in df_acoes_export.columns:
-                df_acoes_export.drop(columns=["Origem"], inplace=True)
-            if not df_carteiras_export.empty and "Origem" in df_carteiras_export.columns:
-                df_carteiras_export.drop(columns=["Origem"], inplace=True)
-
-            with pd.ExcelWriter(filepath, engine='xlsxwriter') as writer:
-                # Sempre tenta escrever a aba de ações se houver dados
-                if not df_acoes_export.empty:
-                    self._write_dataframe_to_excel_sheet(writer, df_acoes_export, 'Acoes')
-
-                # Só escreve a aba de carteiras se houver dados
-                if not df_carteiras_export.empty:
-                    self._write_dataframe_to_excel_sheet(writer, df_carteiras_export, 'Carteiras')
-
-            # Mensagem de sucesso personalizada baseada no que foi exportado
-            if not df_acoes_export.empty and not df_carteiras_export.empty:
-                success_msg = "Os dados de AÇÕES e CARTEIRAS foram exportados para:"
-            elif not df_acoes_export.empty:
-                success_msg = "Os dados de AÇÕES foram exportados para:"
-            else:
-                success_msg = "Os dados de CARTEIRAS foram exportados para:"
-
-            try:
-                if os.name == 'nt':  # Windows
-                    abs_filepath = os.path.abspath(filepath)
-                    messagebox.showinfo("Exportação Concluída",
-                                      f"{success_msg}\n{abs_filepath}\n\nA pasta contendo o arquivo será aberta.")
-                    subprocess.Popen(f'explorer /select,"{abs_filepath}"', shell=True)
-                else:
-                    messagebox.showinfo("Exportação Concluída",
-                                      f"{success_msg} {filepath}.\nPor favor, navegue até a pasta para abrir o arquivo manualmente.")
-            except Exception as e_open:
-                messagebox.showwarning("Aviso de Abertura de Pasta",
-                                     f"Dados exportados para {filepath}, mas ocorreu um erro ao tentar abrir a pasta: {str(e_open)}")
-
-        except Exception as e:
-            messagebox.showerror("Erro de Exportação", f"Erro ao exportar os dados: {str(e)}")
-
-    def _write_dataframe_to_excel_sheet(self, writer, df, sheet_name):
-        """Escreve um DataFrame em uma aba específica do Excel com formatação."""
-        if df.empty:
-            return
-
-        workbook = writer.book
-        format_text = workbook.add_format({'num_format': '@'})
-        format_number = workbook.add_format({'num_format': '#,##0.00'})
-        format_currency = workbook.add_format({'num_format': 'R$ #,##0.00'})
-        format_percentage = workbook.add_format({'num_format': '0.00%'})
-
-        coluna_configs = {col_conf["nome"]: col_conf for col_conf in self.config.get("colunas_personalizadas", [])}
-        df_processed = df.copy()
-
-        for col_name in df_processed.columns:
-            col_conf = coluna_configs.get(col_name)
-            formato_excel = col_conf.get("formato_excel", "Texto") if col_conf else "Texto"
-
-            if formato_excel in ["Número", "Moeda", "Porcentagem"]:
-                original_series = df_processed[col_name].copy()
-                try:
-                    current_col_as_str = df_processed[col_name].astype(str)
-                    cleaned_col = current_col_as_str.str.replace('R$', '', regex=False)
-                    cleaned_col = cleaned_col.str.replace('%', '', regex=False)
-                    cleaned_col = cleaned_col.str.strip()
-                    cleaned_col = cleaned_col.str.replace(r'(?<=\d)\.(?=\d{3}(?!\d))', '', regex=True)
-                    cleaned_col = cleaned_col.str.replace(',', '.', regex=False)
-
-                    numeric_series = pd.to_numeric(cleaned_col, errors='coerce')
-
-                    if formato_excel == "Porcentagem":
-                        df_processed[col_name] = numeric_series / 100.0
-                    else:
-                        df_processed[col_name] = numeric_series
-
-                    if df_processed[col_name].isnull().all() and not original_series.isnull().all():
-                        df_processed[col_name] = original_series
-                except Exception:
-                    df_processed[col_name] = original_series
-
-        df_processed.to_excel(writer, sheet_name=sheet_name, index=False)
-        worksheet = writer.sheets[sheet_name]
-
-        for col_num, column_title in enumerate(df_processed.columns):
-            col_conf = coluna_configs.get(column_title)
-            formato_excel = col_conf.get("formato_excel", "Texto") if col_conf else "Texto"
-
-            is_numeric_and_valid = pd.api.types.is_numeric_dtype(df_processed[column_title]) and not df_processed[column_title].isnull().all()
-            if df[column_title].isnull().all() and formato_excel != "Texto":
-                is_numeric_and_valid = False
-
-            if formato_excel == "Moeda" and is_numeric_and_valid:
-                worksheet.set_column(col_num, col_num, 18, format_currency)
-            elif formato_excel == "Porcentagem" and is_numeric_and_valid:
-                worksheet.set_column(col_num, col_num, 12, format_percentage)
-            elif formato_excel == "Número" and is_numeric_and_valid:
-                worksheet.set_column(col_num, col_num, 15, format_number)
-            else:
-                worksheet.set_column(col_num, col_num, 15, format_text)
 
     def cleanup(self):
         """Limpa recursos do extrator."""

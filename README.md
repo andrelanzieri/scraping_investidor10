@@ -5,10 +5,19 @@
 [![Selenium](https://img.shields.io/badge/Selenium-4.33.0-yellow.svg)](https://selenium-python.readthedocs.io/)
 [![Release](https://img.shields.io/github/v/release/andrelanzieri/scraping_investidor10?color=brightgreen)](https://github.com/andrelanzieri/scraping_investidor10/releases)
 
-> Ferramenta automatizada para extrair dados de ações do site Investidor10 com interface gráfica moderna e arquitetura modular.
+> Uma ferramenta de automação de desktop de código aberto para extrair dados de ações do site Investidor10. Construída com Python, Selenium e Tkinter, esta aplicação oferece uma interface gráfica moderna, extração de dados personalizável e exportação para Excel.
 
 **📥 Download do Executável:**
 <https://github.com/andrelanzieri/scraping_investidor10/releases>
+
+## 🛠️ Tecnologias Utilizadas
+
+- **Python:** Linguagem de programação principal.
+- **Selenium:** Para automação de navegador web e extração de dados.
+- **Tkinter:** Para a construção da interface gráfica.
+- **Pandas:** Para manipulação e estruturação de dados.
+- **OpenPyXL & XlsxWriter:** Para a criação de relatórios em Excel.
+- **webdriver-manager:** Para o gerenciamento automático do ChromeDriver.
 
 ## 📋 Índice
 
@@ -44,17 +53,9 @@
 
 ### Interface Principal
 
-![Tela Inicial](screenshots/telainicial.png)
-
 ![Interface Principal](screenshots/interface_principal.png)
 
 *Interface principal da aplicação com tema escuro, mostrando a lista de ações configuradas e botões de ação.*
-
-### Configuração de Ações
-
-![Configuração de Ações](screenshots/configuracao_acoes.png)
-
-*Tela de configuração onde você pode adicionar/remover ações e personalizar colunas de dados.*
 
 ### Resultado Excel
 
@@ -141,8 +142,9 @@ A aplicação foi completamente refatorada para uma arquitetura modular com sepa
 4. **Verifique a instalação**:
 
    ```bash
-   python main.py
+   python test_imports.py
    ```
+   Este comando irá verificar se todas as dependências foram instaladas corretamente.
 
 ### 📋 Dependências
 
@@ -153,8 +155,7 @@ A aplicação foi completamente refatorada para uma arquitetura modular com sepa
 | `openpyxl` | 3.1.5 | Leitura/escrita de arquivos Excel |
 | `xlsxwriter` | ≥3.0.0 | Engine para escrita de Excel com formatação |
 | `webdriver-manager` | 4.0.2 | Gerenciamento automático do ChromeDriver |
-| `requests` | ≥2.31.0 | Requisições HTTP (dependência adicional) |
-| `lxml` | ≥4.9.0 | Parser XML/HTML mais rápido para pandas |
+| `lxml` | ≥4.9.0 | Parser XML/HTML mais rápido para pandas (opcional) |
 | `Pillow` | ≥10.0.0 | Processamento de imagens (capturas de tela) |
 
 ## 🚀 Uso
@@ -167,11 +168,12 @@ A aplicação foi completamente refatorada para uma arquitetura modular com sepa
 python main.py
 ```
 
-**Método 2 - Script Windows**:
+**Método 2 - Script Windows (Recomendado)**:
 
 ```bash
 run.bat
 ```
+Este script inicia a aplicação diretamente, sem a necessidade de usar o terminal.
 
 ### 📝 Fluxo de Trabalho
 
@@ -318,6 +320,8 @@ A: Não, é necessária conexão com internet para acessar o site.
 
 ### 🐛 Debug e Logs
 
+- **Verificar dependências**: Execute `python test_imports.py` para garantir que todas as bibliotecas necessárias estão instaladas.
+
 - **Interface**: Mensagens de status na barra inferior
 - **Pop-ups**: Erros detalhados em janelas de diálogo
 - **Terminal**: Execute `python main.py` para logs completos
@@ -370,28 +374,6 @@ Contribuições são bem-vindas! Para contribuir:
 - 🌐 **Suporte a outros sites**: Fundamentus, Status Invest
 - 📱 **Interface mobile**: App móvel ou PWA
 - 🔔 **Sistema de alertas**: Notificações por email/push
-
-## ☕ Apoie o Projeto
-
-Se este projeto foi útil para você e você gostaria de apoiar o desenvolvimento contínuo, considere me comprar um café! ☕
-
-![Buy Me A Coffee](screenshots/coffee.png)
-
-Seu apoio ajuda a:
-
-- 🚀 Manter o projeto atualizado
-- 🐛 Corrigir bugs rapidamente
-- ✨ Adicionar novas funcionalidades
-- 📚 Melhorar a documentação
-- 🔧 Manter a compatibilidade com novas versões
-
-**Outras formas de apoiar:**
-
-- ⭐ Dê uma estrela no projeto
-- 🐛 Reporte bugs e problemas
-- 💡 Sugira melhorias
-- 🤝 Contribua com código
-- 📢 Compartilhe com outros desenvolvedores
 
 ## 📄 Licença
 

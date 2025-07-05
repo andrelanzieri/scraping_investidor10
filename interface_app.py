@@ -7,6 +7,7 @@ from tkinter import font as tkfont
 import threading
 import time
 from data_extractor import DataExtractor
+from excel_exporter import ExcelExporter
 
 
 class ToolTip:
@@ -411,8 +412,6 @@ class InvestidorApp:
         help_menu.add_separator()
         help_menu.add_command(label="Configuração Inicial", command=self.mostrar_configuracao_inicial)
         help_menu.add_separator()
-        help_menu.add_command(label="☕ Buy me a coffee", command=self.mostrar_buy_me_coffee)
-        help_menu.add_separator()
         help_menu.add_command(label="Sobre", command=self.mostrar_sobre)
 
     def mostrar_atalhos(self):
@@ -450,158 +449,7 @@ class InvestidorApp:
                 """
         messagebox.showinfo("Sobre", sobre)
 
-    def mostrar_buy_me_coffee(self):
-        """Mostra a janela com informações para doação via PIX."""
-        try:
-            from PIL import Image, ImageTk
-            import os
-        except ImportError:
-            messagebox.showerror("Erro", "Biblioteca PIL (Pillow) não encontrada.\nInstale com: pip install Pillow")
-            return
-
-        # Criar janela personalizada
-        janela_coffee = tk.Toplevel(self.root)
-        janela_coffee.title("☕ Buy me a coffee - Apoie o projeto!")
-        janela_coffee.geometry("500x650")
-        janela_coffee.resizable(False, False)
-        janela_coffee.configure(bg=self.cor_fundo)
-
-        # Centralizar a janela
-        janela_coffee.transient(self.root)
-        janela_coffee.grab_set()
-
-        # Calcular posição central
-        janela_coffee.update_idletasks()
-        x = (janela_coffee.winfo_screenwidth() // 2) - (500 // 2)
-        y = (janela_coffee.winfo_screenheight() // 2) - (650 // 2)
-        janela_coffee.geometry(f"500x650+{x}+{y}")
-
-        # Frame principal
-        frame_principal = tk.Frame(janela_coffee, bg=self.cor_fundo, padx=30, pady=20)
-        frame_principal.pack(fill=tk.BOTH, expand=True)
-
-        # Título
-        titulo = tk.Label(frame_principal,
-                         text="☕ Buy me a coffee",
-                         font=("Segoe UI", 18, "bold"),
-                         bg=self.cor_fundo, fg=self.cor_texto)
-        titulo.pack(pady=(0, 10))
-
-        # Subtítulo
-        subtitulo = tk.Label(frame_principal,
-                            text="Apoie o desenvolvimento deste projeto!",
-                            font=("Segoe UI", 12),
-                            bg=self.cor_fundo, fg=self.cor_texto_secundario)
-        subtitulo.pack(pady=(0, 20))
-
-        # Texto explicativo
-        texto_explicativo = """Se este projeto foi útil para você, considere fazer uma doação via PIX.
-Sua contribuição ajuda a manter o projeto ativo e a desenvolver novas funcionalidades!
-
-🎯 Como doar:
-• Escaneie o código QR abaixo com seu app bancário
-• Qualquer valor é muito bem-vindo!
-
-💝 Obrigado pelo seu apoio!"""
-
-        lbl_texto = tk.Label(frame_principal,
-                            text=texto_explicativo,
-                            font=("Segoe UI", 10),
-                            bg=self.cor_fundo, fg=self.cor_texto,
-                            justify=tk.LEFT,
-                            wraplength=400)
-        lbl_texto.pack(pady=(0, 20))
-
-        # Frame para a imagem do QR Code
-        frame_qr = tk.Frame(frame_principal, bg=self.cor_fundo_secundario, relief=tk.RIDGE, bd=2)
-        frame_qr.pack(pady=(0, 20))
-
-        try:
-            # Carregar e redimensionar a imagem do código PIX
-            caminho_imagem = os.path.join("screenshots", "coffee.png")
-            if os.path.exists(caminho_imagem):
-                imagem_pix = Image.open(caminho_imagem)
-                # Redimensionar mantendo proporção
-                imagem_pix = imagem_pix.resize((280, 280), Image.Resampling.LANCZOS)
-                photo = ImageTk.PhotoImage(imagem_pix)
-
-                lbl_qr = tk.Label(frame_qr, image=photo, bg=self.cor_fundo_secundario)
-                lbl_qr.image = photo  # Manter referência
-                lbl_qr.pack(padx=10, pady=10)
-            else:
-                # Se a imagem não for encontrada, mostrar texto alternativo
-                lbl_qr = tk.Label(frame_qr,
-                                 text="❌ Imagem do código PIX não encontrada\n\nVerifique se o arquivo 'coffee.png'\nestá na pasta 'screenshots'",
-                                 font=("Segoe UI", 12),
-                                 bg=self.cor_fundo_secundario,
-                                 fg=self.cor_erro,
-                                 justify=tk.CENTER)
-                lbl_qr.pack(padx=20, pady=20)
-        except Exception as e:
-            # Em caso de erro ao carregar a imagem
-            lbl_qr = tk.Label(frame_qr,
-                             text=f"❌ Erro ao carregar imagem:\n{str(e)}",
-                             font=("Segoe UI", 10),
-                             bg=self.cor_fundo_secundario,
-                             fg=self.cor_erro,
-                             justify=tk.CENTER)
-            lbl_qr.pack(padx=20, pady=20)
-
-        # Chave PIX (você deve substituir pela sua chave real)
-        chave_pix = "sua_chave_pix@email.com"  # SUBSTITUA PELA SUA CHAVE PIX REAL
-
-        # Frame para a chave PIX
-        frame_chave = tk.Frame(frame_principal, bg=self.cor_fundo_secundario, relief=tk.RIDGE, bd=1)
-        frame_chave.pack(fill=tk.X, pady=(0, 20))
-
-        lbl_chave_titulo = tk.Label(frame_chave,
-                                   text="🔑 Chave PIX:",
-                                   font=("Segoe UI", 10, "bold"),
-                                   bg=self.cor_fundo_secundario,
-                                   fg=self.cor_texto)
-        lbl_chave_titulo.pack(pady=(10, 5))
-
-        lbl_chave = tk.Label(frame_chave,
-                            text=chave_pix,
-                            font=("Segoe UI", 11),
-                            bg=self.cor_fundo_secundario,
-                            fg=self.cor_destaque,
-                            cursor="hand2")
-        lbl_chave.pack(pady=(0, 10))
-
-        def copiar_chave():
-            try:
-                janela_coffee.clipboard_clear()
-                janela_coffee.clipboard_append(chave_pix)
-                messagebox.showinfo("Sucesso", f"Chave PIX copiada para a área de transferência!\n\n{chave_pix}")
-            except Exception as e:
-                messagebox.showerror("Erro", f"Erro ao copiar chave PIX: {e}")
-
-        # Botão para copiar chave PIX
-        btn_copiar = tk.Button(frame_principal,
-                              text="📋 Copiar Chave PIX",
-                              command=copiar_chave,
-                              bg=self.cor_destaque,
-                              fg="white",
-                              font=("Segoe UI", 11, "bold"),
-                              padx=20,
-                              pady=10,
-                              relief=tk.FLAT,
-                              cursor="hand2")
-        btn_copiar.pack(pady=(0, 10))
-
-        # Botão fechar
-        btn_fechar = tk.Button(frame_principal,
-                              text="Fechar",
-                              command=janela_coffee.destroy,
-                              bg=self.cor_botao,
-                              fg=self.cor_texto,
-                              font=("Segoe UI", 10),
-                              padx=20,
-                              pady=8,
-                              relief=tk.FLAT,
-                              cursor="hand2")
-        btn_fechar.pack()
+    
 
     def mostrar_configuracao_inicial(self):
         """Mostra a mensagem de configuração inicial e permite reativar as notificações."""
@@ -1329,7 +1177,7 @@ Sua contribuição ajuda a manter o projeto ativo e a desenvolver novas funciona
             self.atualizar_contador_acoes()
             self.atualizar_status(f"✅ Ação {acao} adicionada com sucesso!", 100)
         else:
-            messagebox.showinfo("Informação", f"A ação '{acao}' já existe na lista.")
+            messagebox.showinfo("Informação", f"Ação '{acao}' já existe na lista.")
 
     def remover_acao(self):
         """Remove a ação selecionada da lista de ações e da configuração."""
@@ -1432,7 +1280,7 @@ Sua contribuição ajuda a manter o projeto ativo e a desenvolver novas funciona
             if hasattr(widget, 'configure'):
                 if isinstance(widget, (tk.Button, ttk.Button)):
                     widget.configure(state='normal' if enabled else 'disabled')
-                elif isinstance(widget, (tk.Entry, ttk.Entry, tk.Listbox, ttk.Treeview, ttk.Combobox)):
+                elif isinstance(widget, (tk.Entry, tk.Entry, tk.Listbox, ttk.Treeview, ttk.Combobox)):
                     widget.configure(state='normal' if enabled else 'disabled')
 
             # Processar widgets filhos
@@ -1544,11 +1392,9 @@ Sua contribuição ajuda a manter o projeto ativo e a desenvolver novas funciona
             self.root.after(0, lambda: messagebox.showinfo("Extração Concluída", "Nenhum dado foi extraído (nem de ações, nem de carteiras)."))
 
     def exportar_excel(self):
-        """Exporta os dados para Excel usando o DataExtractor."""
-        if self.data_extractor:
-            self.data_extractor.export_to_excel(self.df_acoes, self.df_carteiras)
-        else:
-            messagebox.showwarning("Aviso", "Extrator de dados não disponível para exportação.")
+        """Exporta os dados para Excel usando o ExcelExporter."""
+        exporter = ExcelExporter(self.config)
+        exporter.export_to_excel(self.df_acoes, self.df_carteiras)
 
     # Métodos para gerenciamento de colunas personalizadas
     def _criar_e_configurar_dialogo_coluna_ui(self, titulo_dialogo, coluna_existente=None):

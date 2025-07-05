@@ -71,3 +71,4 @@ release/
 *.manifest
 *.spec.bak
 hooks/hook-webdriver_manager.py
+gemini.md
