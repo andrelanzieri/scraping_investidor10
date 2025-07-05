@@ -15,7 +15,7 @@ from pathlib import Path
 
 def test_imports():
     """Testa se todas as importações necessárias estão funcionando."""
-    print("🧪 Testando importações antes do build...")
+    print("Testando importações antes do build...")
 
     try:
         # Executa o script de teste
