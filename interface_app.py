@@ -1,6 +1,6 @@
 import json
 import tkinter as tk
-from tkinter import ttk, messagebox, filedialog
+from tkinter import ttk, messagebox, filedialog, scrolledtext
 import pandas as pd
 import os
 from tkinter import font as tkfont
@@ -8,6 +8,7 @@ import threading
 import time
 from data_extractor import DataExtractor
 from excel_exporter import ExcelExporter
+from data_viewer import DataViewer
 
 
 class ToolTip:
@@ -1282,6 +1283,10 @@ class InvestidorApp:
                     widget.configure(state='normal' if enabled else 'disabled')
                 elif isinstance(widget, (tk.Entry, tk.Entry, tk.Listbox, ttk.Treeview, ttk.Combobox)):
                     widget.configure(state='normal' if enabled else 'disabled')
+                elif isinstance(widget, (tk.Checkbutton, ttk.Checkbutton)):
+                    widget.configure(state='normal' if enabled else 'disabled')
+                elif isinstance(widget, (tk.Text, tk.scrolledtext.ScrolledText)):
+                    widget.configure(state='normal' if enabled else 'disabled')
 
             # Processar widgets filhos
             for child in widget.winfo_children():
@@ -1395,6 +1400,17 @@ class InvestidorApp:
         """Exporta os dados para Excel usando o ExcelExporter."""
         exporter = ExcelExporter(self.config)
         exporter.export_to_excel(self.df_acoes, self.df_carteiras)
+        
+        # Abrir tela de visualização de dados após exportação
+        if not self.df_acoes.empty or not self.df_carteiras.empty:
+            self.abrir_visualizador_dados()
+    
+    def abrir_visualizador_dados(self):
+        """Abre a tela de visualização de dados."""
+        try:
+            viewer = DataViewer(self.root, self.df_acoes, self.df_carteiras, self.config)
+        except Exception as e:
+            messagebox.showerror("Erro", f"Erro ao abrir visualizador de dados: {str(e)}")
 
     # Métodos para gerenciamento de colunas personalizadas
     def _criar_e_configurar_dialogo_coluna_ui(self, titulo_dialogo, coluna_existente=None):

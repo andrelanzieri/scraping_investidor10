@@ -27,6 +27,7 @@ def carregar_config():
     }
 
     try:
+        
         if os.path.exists(arquivo_config):
             with open(arquivo_config, 'r', encoding='utf-8') as f:
                 config = json.load(f)

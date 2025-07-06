@@ -267,7 +267,8 @@
             "formato_excel": "Número"
         }
     ],
-    "headless": true,
+    "headless": false,
     "tema": "escuro",
-    "mostrar_mensagem_inicial": true
+    "mostrar_mensagem_inicial": true,
+    "gemini_api_key": ""
 }
