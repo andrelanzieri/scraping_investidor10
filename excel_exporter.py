@@ -17,10 +17,12 @@ class ExcelExporter:
         """
         self.config = config
 
-    def export_to_excel(self, df_acoes, df_carteiras):
+    def export_to_excel(self, df_acoes, df_fiis=None, df_carteiras_acoes=None, df_carteiras_fiis=None):
         """Exporta os dados para Excel com formatação adequada."""
-        if df_acoes.empty and df_carteiras.empty:
-            messagebox.showwarning("Aviso", "Não há dados para exportar (nem ações, nem carteiras)")
+        if (df_acoes.empty and (df_fiis is None or df_fiis.empty) and
+            (df_carteiras_acoes is None or df_carteiras_acoes.empty) and
+            (df_carteiras_fiis is None or df_carteiras_fiis.empty)):
+            messagebox.showwarning("Aviso", "Não há dados para exportar")
             return
 
         try:
@@ -34,26 +36,34 @@ class ExcelExporter:
                 return
 
             df_acoes_export = df_acoes.copy() if not df_acoes.empty else pd.DataFrame()
-            df_carteiras_export = df_carteiras.copy() if not df_carteiras.empty else pd.DataFrame()
+            df_fiis_export = df_fiis.copy() if df_fiis is not None and not df_fiis.empty else pd.DataFrame()
+            df_carteiras_acoes_export = df_carteiras_acoes.copy() if df_carteiras_acoes is not None and not df_carteiras_acoes.empty else pd.DataFrame()
+            df_carteiras_fiis_export = df_carteiras_fiis.copy() if df_carteiras_fiis is not None and not df_carteiras_fiis.empty else pd.DataFrame()
 
-            if not df_acoes_export.empty and "Origem" in df_acoes_export.columns:
-                df_acoes_export.drop(columns=["Origem"], inplace=True)
-            if not df_carteiras_export.empty and "Origem" in df_carteiras_export.columns:
-                df_carteiras_export.drop(columns=["Origem"], inplace=True)
+            # Remover coluna "Origem" se existir
+            for df_export in [df_acoes_export, df_fiis_export, df_carteiras_acoes_export, df_carteiras_fiis_export]:
+                if not df_export.empty and "Origem" in df_export.columns:
+                    df_export.drop(columns=["Origem"], inplace=True)
 
             with pd.ExcelWriter(filepath, engine='xlsxwriter') as writer:
                 if not df_acoes_export.empty:
-                    self._write_dataframe_to_excel_sheet(writer, df_acoes_export, 'Acoes')
+                    self._write_dataframe_to_excel_sheet(writer, df_acoes_export, 'Acoes', 'colunas_personalizadas')
 
-                if not df_carteiras_export.empty:
-                    self._write_dataframe_to_excel_sheet(writer, df_carteiras_export, 'Carteiras')
+                if not df_fiis_export.empty:
+                    self._write_dataframe_to_excel_sheet(writer, df_fiis_export, 'FIIs', 'colunas_personalizadas_fiis')
 
-            self._show_success_message(filepath, df_acoes_export, df_carteiras_export)
+                if not df_carteiras_acoes_export.empty:
+                    self._write_dataframe_to_excel_sheet(writer, df_carteiras_acoes_export, 'Carteira_Acoes')
+
+                if not df_carteiras_fiis_export.empty:
+                    self._write_dataframe_to_excel_sheet(writer, df_carteiras_fiis_export, 'Carteira_FIIs')
+
+            self._show_success_message(filepath, df_acoes_export, df_fiis_export, df_carteiras_acoes_export, df_carteiras_fiis_export)
 
         except Exception as e:
             messagebox.showerror("Erro de Exportação", f"Erro ao exportar os dados: {str(e)}")
 
-    def _write_dataframe_to_excel_sheet(self, writer, df, sheet_name):
+    def _write_dataframe_to_excel_sheet(self, writer, df, sheet_name, config_key='colunas_personalizadas'):
         """Escreve um DataFrame em uma aba específica do Excel com formatação."""
         if df.empty:
             return
@@ -64,7 +74,7 @@ class ExcelExporter:
         format_currency = workbook.add_format({'num_format': 'R$ #,##0.00'})
         format_percentage = workbook.add_format({'num_format': '0.00%'})
 
-        coluna_configs = {col_conf["nome"]: col_conf for col_conf in self.config.get("colunas_personalizadas", [])}
+        coluna_configs = {col_conf["nome"]: col_conf for col_conf in self.config.get(config_key, [])}
         df_processed = df.copy()
 
         for col_name in df_processed.columns:
@@ -113,14 +123,25 @@ class ExcelExporter:
             else:
                 worksheet.set_column(col_num, col_num, 15, format_text)
 
-    def _show_success_message(self, filepath, df_acoes, df_carteiras):
+    def _show_success_message(self, filepath, df_acoes, df_fiis=None, df_carteiras_acoes=None, df_carteiras_fiis=None):
         """Exibe a mensagem de sucesso e abre a pasta do arquivo."""
-        if not df_acoes.empty and not df_carteiras.empty:
-            success_msg = "Os dados de AÇÕES e CARTEIRAS foram exportados para:"
-        elif not df_acoes.empty:
-            success_msg = "Os dados de AÇÕES foram exportados para:"
+        tipos_exportados = []
+        if not df_acoes.empty:
+            tipos_exportados.append("AÇÕES")
+        if df_fiis is not None and not df_fiis.empty:
+            tipos_exportados.append("FIIs")
+        if df_carteiras_acoes is not None and not df_carteiras_acoes.empty:
+            tipos_exportados.append("CARTEIRA DE AÇÕES")
+        if df_carteiras_fiis is not None and not df_carteiras_fiis.empty:
+            tipos_exportados.append("CARTEIRA DE FIIs")
+
+
+        if len(tipos_exportados) > 1:
+            success_msg = f"Os dados de {', '.join(tipos_exportados[:-1])} e {tipos_exportados[-1]} foram exportados para:"
+        elif len(tipos_exportados) == 1:
+            success_msg = f"Os dados de {tipos_exportados[0]} foram exportados para:"
         else:
-            success_msg = "Os dados de CARTEIRAS foram exportados para:"
+            success_msg = "Os dados foram exportados para:"
 
         try:
             if os.name == 'nt':  # Windows

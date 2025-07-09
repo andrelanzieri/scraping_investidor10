@@ -17,6 +17,9 @@
         "TAEE11",
         "CSMG3"
     ],
+    "fiis": [
+        "HGPO11"
+    ],
     "colunas_personalizadas": [
         {
             "nome": "Nome",
@@ -264,6 +267,32 @@
             "classe_busca": "",
             "classe_retorno": "",
             "seletor_css": "tr.visible-even:nth-child(24) > td:nth-child(7)",
+            "formato_excel": "Número"
+        }
+    ],
+    "colunas_personalizadas_fiis": [
+        {
+            "nome": "Nome",
+            "tipo": "avancado",
+            "classe_busca": "",
+            "classe_retorno": "",
+            "seletor_css": ".name-company",
+            "formato_excel": "Texto"
+        },
+        {
+            "nome": "Cotação",
+            "tipo": "avancado",
+            "classe_busca": "",
+            "classe_retorno": "",
+            "seletor_css": "div._card:nth-child(1) > div:nth-child(2) > div:nth-child(1) > span:nth-child(1)",
+            "formato_excel": "Moeda"
+        },
+        {
+            "nome": "P/VP",
+            "tipo": "avancado",
+            "classe_busca": "",
+            "classe_retorno": "",
+            "seletor_css": "div._card:nth-child(3) > div:nth-child(2) > span:nth-child(1)",
             "formato_excel": "Número"
         }
     ],

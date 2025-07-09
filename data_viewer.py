@@ -18,19 +18,23 @@ class DataViewer:
     Tela para visualizar dados exportados e interagir com IA Google Gemini.
     """
 
-    def __init__(self, parent, df_acoes, df_carteiras, config):
+    def __init__(self, parent, df_acoes, config, df_fiis=None, df_carteiras_acoes=None, df_carteiras_fiis=None):
         """
         Inicializa o visualizador de dados.
 
         Args:
             parent: Widget pai (janela principal)
             df_acoes: DataFrame com dados das ações
-            df_carteiras: DataFrame com dados das carteiras
             config: Configurações da aplicação
+            df_fiis: DataFrame com dados dos FIIs (opcional)
+            df_carteiras_acoes: DataFrame com dados da carteira de ações (opcional)
+            df_carteiras_fiis: DataFrame com dados da carteira de FIIs (opcional)
         """
         self.parent = parent
         self.df_acoes = df_acoes
-        self.df_carteiras = df_carteiras
+        self.df_fiis = df_fiis if df_fiis is not None else pd.DataFrame()
+        self.df_carteiras_acoes = df_carteiras_acoes if df_carteiras_acoes is not None else pd.DataFrame()
+        self.df_carteiras_fiis = df_carteiras_fiis if df_carteiras_fiis is not None else pd.DataFrame()
         self.config = config
         self.ai_configured = False
 
@@ -140,11 +144,23 @@ class DataViewer:
             dados_notebook.add(frame_acoes, text=f"📈 Ações ({len(self.df_acoes)} registros)")
             self.criar_tabela_dados(frame_acoes, self.df_acoes)
 
-        # Aba de carteiras
-        if not self.df_carteiras.empty:
-            frame_carteiras = ttk.Frame(dados_notebook)
-            dados_notebook.add(frame_carteiras, text=f"💼 Carteiras ({len(self.df_carteiras)} registros)")
-            self.criar_tabela_dados(frame_carteiras, self.df_carteiras)
+        # Aba de FIIs
+        if not self.df_fiis.empty:
+            frame_fiis = ttk.Frame(dados_notebook)
+            dados_notebook.add(frame_fiis, text=f"🏢 FIIs ({len(self.df_fiis)} registros)")
+            self.criar_tabela_dados(frame_fiis, self.df_fiis)
+
+        # Aba de carteira de ações
+        if not self.df_carteiras_acoes.empty:
+            frame_carteiras_acoes = ttk.Frame(dados_notebook)
+            dados_notebook.add(frame_carteiras_acoes, text=f"💼 Carteira Ações ({len(self.df_carteiras_acoes)} registros)")
+            self.criar_tabela_dados(frame_carteiras_acoes, self.df_carteiras_acoes)
+
+        # Aba de carteira de FIIs
+        if not self.df_carteiras_fiis.empty:
+            frame_carteiras_fiis = ttk.Frame(dados_notebook)
+            dados_notebook.add(frame_carteiras_fiis, text=f"🏢 Carteira FIIs ({len(self.df_carteiras_fiis)} registros)")
+            self.criar_tabela_dados(frame_carteiras_fiis, self.df_carteiras_fiis)
 
         # Estatísticas gerais
         self.criar_estatisticas(main_frame)
@@ -197,9 +213,11 @@ class DataViewer:
             stats_info.append(f"📈 AÇÕES: {len(self.df_acoes)} registros")
             stats_info.append(f"   Colunas: {', '.join(self.df_acoes.columns[:5])}{'...' if len(self.df_acoes.columns) > 5 else ''}")
 
-        if not self.df_carteiras.empty:
-            stats_info.append(f"💼 CARTEIRAS: {len(self.df_carteiras)} registros")
-            stats_info.append(f"   Colunas: {', '.join(self.df_carteiras.columns[:5])}{'...' if len(self.df_carteiras.columns) > 5 else ''}")
+        if not self.df_fiis.empty:
+            stats_info.append(f"🏢 FIIs: {len(self.df_fiis)} registros")
+            stats_info.append(f"   Colunas: {', '.join(self.df_fiis.columns[:5])}{'...' if len(self.df_fiis.columns) > 5 else ''}")
+
+
 
         stats_info.append(f"📅 Exportado em: {datetime.now().strftime('%d/%m/%Y %H:%M:%S')}")
 
@@ -278,15 +296,27 @@ class DataViewer:
 
         # Adicionar tooltip informativo
         def mostrar_info_csv():
-            messagebox.showinfo("Insights",
-                "Este botão envia TODOS os dados extraídos em formato CSV para a IA fazer uma análise completa automática.\n\n" +
-                "A IA fornecerá:\n" +
-                "• Resumo geral dos dados\n" +
-                "• Insights e tendências\n" +
-                "• Comparações detalhadas\n" +
-                "• Recomendações de investimento\n" +
-                "• Identificação de oportunidades\n" +
-                "• Análise de riscos")
+            messagebox.showinfo("Análise Completa com IA",
+                "🚀 **Análise Financeira Completa e Estratégica**\n\n" +
+                "Este botão ativa uma análise profunda e abrangente de TODOS os seus dados:\n\n" +
+                "📊 **Análise Fundamentalista:**\n" +
+                "• Valuation e atratividade de preços\n" +
+                "• Qualidade e rentabilidade das empresas\n" +
+                "• Solidez financeira e estrutura de capital\n" +
+                "• Política de dividendos e sustentabilidade\n\n" +
+                "🎯 **Rankings e Recomendações:**\n" +
+                "• Top picks para diferentes perfis\n" +
+                "• Oportunidades de valor e crescimento\n" +
+                "• Red flags e riscos específicos\n\n" +
+                "💼 **Estratégias de Portfólio:**\n" +
+                "• Diversificação setorial otimizada\n" +
+                "• Estratégias para diferentes objetivos\n" +
+                "• Análise de concentração e riscos\n\n" +
+                "🔍 **Insights Únicos:**\n" +
+                "• Correlações e padrões especiais\n" +
+                "• Análise de cenários e sensibilidade\n" +
+                "• Recomendações personalizadas\n\n" +
+                "⚡ **A IA combinará rigor técnico com criatividade analítica!**")
 
         # Bind para mostrar info quando clicar com botão direito
         self.btn_dados_csv.bind("<Button-3>", lambda e: mostrar_info_csv())
@@ -303,8 +333,20 @@ class DataViewer:
         if not GENAI_AVAILABLE:
             self.adicionar_mensagem_chat("🤖 IA", "A biblioteca google-generativeai não está instalada. Execute: pip install google-generativeai", "bot")
         elif self.ai_configured:
-            total_registros = len(self.df_acoes) + len(self.df_carteiras)
-            self.adicionar_mensagem_chat("🤖 IA", f"Olá! Estou pronto para ajudar com análise dos seus dados financeiros. Tenho acesso a TODOS os {total_registros} registros extraídos ({len(self.df_acoes)} ações e {len(self.df_carteiras)} itens de carteira). Posso fazer análises completas, comparações detalhadas, identificar tendências e fornecer recomendações baseadas em todos os dados disponíveis. Você pode me fazer qualquer pergunta sobre os dados!", "bot")
+            total_registros = len(self.df_acoes) + len(self.df_fiis) + len(self.df_carteiras_acoes) + len(self.df_carteiras_fiis)
+            tipos_dados = []
+            if len(self.df_acoes) > 0:
+                tipos_dados.append(f"{len(self.df_acoes)} ações")
+            if len(self.df_fiis) > 0:
+                tipos_dados.append(f"{len(self.df_fiis)} FIIs")
+            if len(self.df_carteiras_acoes) > 0:
+                tipos_dados.append(f"{len(self.df_carteiras_acoes)} itens de carteira de ações")
+            if len(self.df_carteiras_fiis) > 0:
+                tipos_dados.append(f"{len(self.df_carteiras_fiis)} itens de carteira de FIIs")
+
+            descricao_dados = ", ".join(tipos_dados[:-1]) + f" e {tipos_dados[-1]}" if len(tipos_dados) > 1 else tipos_dados[0] if tipos_dados else "nenhum dado"
+
+            self.adicionar_mensagem_chat("🤖 IA", f"✨ **Analista Financeiro IA - Pronto para Ajudar!**\n\n📊 **Dados Disponíveis:** {total_registros} registros ({descricao_dados})\n\n🎯 **O que posso fazer:**\n• Análises fundamentalistas detalhadas\n• Identificação de oportunidades e riscos\n• Comparações setoriais e rankings\n• Estratégias de portfólio personalizadas\n• Insights criativos e correlações únicas\n• Recomendações baseadas nos seus dados\n• Análises específicas de FIIs e ações\n\n💡 **Dicas:**\n• Use o botão **'📋 Insights'** para análise automática completa\n• Faça perguntas específicas sobre ações, FIIs ou setores\n• Peça comparações, rankings ou cenários\n• Solicite estratégias para diferentes perfis de risco\n\n🚀 **Estou aqui para ser seu consultor financeiro pessoal!**", "bot")
         else:
             self.adicionar_mensagem_chat("🤖 IA", "Configure sua API key do Google Gemini na aba 'Configurações da IA' para começar a usar o chat.", "bot")
 
@@ -641,12 +683,12 @@ class DataViewer:
             # Preparar contexto com os dados
             contexto = self.preparar_contexto_dados()
 
-            # Prompt completo
+            # Adicionar a pergunta do usuário ao prompt final
             prompt_completo = f"""{contexto}
 
-Pergunta do usuário: {mensagem}
-
-Responda de forma clara e objetiva, baseando-se nos dados fornecidos quando relevante. Se a pergunta não estiver relacionada aos dados, responda normalmente mas mencione que você tem acesso aos dados financeiros exportados."""
+**PERGUNTA DO USUÁRIO:**
+{mensagem}
+"""
 
             # Gerar resposta
             response = self.model.generate_content(prompt_completo)
@@ -664,79 +706,137 @@ Responda de forma clara e objetiva, baseando-se nos dados fornecidos quando rele
             self.window.after(0, lambda: self.entrada_ia.delete(0, tk.END) if hasattr(self, 'entrada_ia') else None)
 
     def preparar_contexto_dados(self):
-        """Prepara o contexto com TODOS os dados exportados, otimizando para grandes volumes."""
-        contexto = "Contexto completo dos dados financeiros exportados:\n\n"
+        """Prepara o contexto com TODOS os dados exportados, usando uma estrutura de prompt flexível e poderosa."""
 
-        # Calcular limite estimado para evitar exceder tokens da IA
-        # Gemini 2.5 Pro tem limite de ~1M tokens, deixamos margem para pergunta/resposta
-        MAX_CHARS = 800000  # Limite conservador em caracteres
-        contexto_chars = 0
+        # --- ESTRUTURA DO PROMPT MELHORADA ---
 
+        # 1. PERSONA APRIMORADA
+        persona = """**PERSONA:**
+Você é um analista financeiro experiente e consultor de investimentos com amplo conhecimento do mercado brasileiro. Você combina análise técnica rigorosa com insights práticos e perspectivas estratégicas. Seu objetivo é fornecer análises valiosas, insights acionáveis e orientações baseadas nos dados, sempre priorizando clareza e utilidade para o usuário."""
+
+        # 2. CONTEXTO DOS DADOS EXPANDIDO
+        contexto_dados = f"""**CONTEXTO DOS DADOS:**
+Você tem acesso a dados financeiros fundamentalistas extraídos do site Investidor10.
+- **Data da Extração:** {datetime.now().strftime('%d/%m/%Y %H:%M:%S')}
+- **Fonte:** Investidor10 - dados fundamentalistas atualizados
+- **Escopo:** Informações sobre ações brasileiras e composição de carteiras de investimento
+- **Propósito:** Análise para tomada de decisões de investimento informadas"""
+
+        # 3. DADOS PARA ANÁLISE (em formato CSV para otimização)
+        dados_analise = ["**DADOS DISPONÍVEIS PARA ANÁLISE:**"]
+        MAX_CHARS = 800000
+
+        # Adicionar dados de ações
         if not self.df_acoes.empty:
-            contexto += f"DADOS DE AÇÕES ({len(self.df_acoes)} registros):\n"
-            contexto += f"Colunas: {', '.join(self.df_acoes.columns)}\n"
+            header = f"\n**📈 DADOS DE AÇÕES ({len(self.df_acoes)} registros):**"
+            csv_acoes = self.df_acoes.to_csv(index=False)
+            dados_analise.append(header)
+            dados_analise.append(csv_acoes)
 
-            # Adicionar TODOS os dados de ações
-            contexto += "TODOS OS DADOS DE AÇÕES:\n"
-            for i, (_, row) in enumerate(self.df_acoes.iterrows()):
-                linha_dados = f"  {i+1}. {dict(row)}\n"
-                if contexto_chars + len(linha_dados) > MAX_CHARS:
-                    contexto += f"  ... [DADOS TRUNCADOS - Mostrando {i} de {len(self.df_acoes)} registros para evitar limite de tokens]\n"
-                    break
-                contexto += linha_dados
-                contexto_chars += len(linha_dados)
-            contexto += "\n"
+        # Adicionar dados de FIIs
+        if not self.df_fiis.empty:
+            header = f"\n**🏢 DADOS DE FIIs ({len(self.df_fiis)} registros):**"
+            csv_fiis = self.df_fiis.to_csv(index=False)
+            dados_analise.append(header)
+            dados_analise.append(csv_fiis)
 
-        if not self.df_carteiras.empty and contexto_chars < MAX_CHARS:
-            contexto += f"DADOS DE CARTEIRAS ({len(self.df_carteiras)} registros):\n"
-            contexto += f"Colunas: {', '.join(self.df_carteiras.columns)}\n"
+        # Adicionar dados de carteira de ações
+        if not self.df_carteiras_acoes.empty:
+            header = f"\n**💼 DADOS DE CARTEIRA DE AÇÕES ({len(self.df_carteiras_acoes)} registros):**"
+            csv_carteiras_acoes = self.df_carteiras_acoes.to_csv(index=False)
+            dados_analise.append(header)
+            dados_analise.append(csv_carteiras_acoes)
 
-            # Adicionar TODOS os dados de carteiras
-            contexto += "TODOS OS DADOS DE CARTEIRAS:\n"
-            for i, (_, row) in enumerate(self.df_carteiras.iterrows()):
-                linha_dados = f"  {i+1}. {dict(row)}\n"
-                if contexto_chars + len(linha_dados) > MAX_CHARS:
-                    contexto += f"  ... [DADOS TRUNCADOS - Mostrando {i} de {len(self.df_carteiras)} registros para evitar limite de tokens]\n"
-                    break
-                contexto += linha_dados
-                contexto_chars += len(linha_dados)
-            contexto += "\n"
+        # Adicionar dados de carteira de FIIs
+        if not self.df_carteiras_fiis.empty:
+            header = f"\n**🏢 DADOS DE CARTEIRA DE FIIs ({len(self.df_carteiras_fiis)} registros):**"
+            csv_carteiras_fiis = self.df_carteiras_fiis.to_csv(index=False)
+            dados_analise.append(header)
+            dados_analise.append(csv_carteiras_fiis)
 
-        # Adicionar estatísticas resumidas
-        contexto += "RESUMO ESTATÍSTICO:\n"
+
+
+        dados_str = "\n".join(dados_analise)
+
+        # Truncar se necessário
+        if len(dados_str) > MAX_CHARS:
+            dados_str = dados_str[:MAX_CHARS] + "\n... [DADOS TRUNCADOS PARA OTIMIZAÇÃO - Análise baseada na amostra mais representativa]"
+
+        # 4. RESUMO ESTATÍSTICO INTELIGENTE
+        resumo_estatistico_list = ["\n**📊 RESUMO ESTATÍSTICO:**"]
         if not self.df_acoes.empty:
-            contexto += f"- Total de ações analisadas: {len(self.df_acoes)}\n"
-            # Adicionar estatísticas específicas se houver colunas numéricas
-            numeric_cols = self.df_acoes.select_dtypes(include=['number']).columns
-            if len(numeric_cols) > 0:
-                contexto += f"- Colunas numéricas: {', '.join(numeric_cols)}\n"
-                # Adicionar estatísticas descritivas para colunas numéricas
-                for col in numeric_cols:
-                    if not self.df_acoes[col].empty:
-                        try:
-                            stats = self.df_acoes[col].describe()
-                            contexto += f"  {col}: Média={stats['mean']:.2f}, Min={stats['min']:.2f}, Max={stats['max']:.2f}\n"
-                        except:
-                            pass
+            resumo_estatistico_list.append(f"\n**Ações:** {len(self.df_acoes)} registros disponíveis")
+            # Adicionar insights sobre as colunas disponíveis
+            colunas_numericas = self.df_acoes.select_dtypes(include=['number']).columns
+            if len(colunas_numericas) > 0:
+                resumo_estatistico_list.append(f"Métricas numéricas: {', '.join(colunas_numericas.tolist())}")
+                resumo_estatistico_list.append("\nEstatísticas descritivas:")
+                resumo_estatistico_list.append(self.df_acoes.describe().to_string())
 
-        if not self.df_carteiras.empty:
-            contexto += f"- Total de itens em carteiras: {len(self.df_carteiras)}\n"
-            # Adicionar estatísticas específicas se houver colunas numéricas
-            numeric_cols = self.df_carteiras.select_dtypes(include=['number']).columns
-            if len(numeric_cols) > 0:
-                contexto += f"- Colunas numéricas: {', '.join(numeric_cols)}\n"
-                # Adicionar estatísticas descritivas para colunas numéricas
-                for col in numeric_cols:
-                    if not self.df_carteiras[col].empty:
-                        try:
-                            stats = self.df_carteiras[col].describe()
-                            contexto += f"  {col}: Média={stats['mean']:.2f}, Min={stats['min']:.2f}, Max={stats['max']:.2f}\n"
-                        except:
-                            pass
+        if not self.df_fiis.empty:
+            resumo_estatistico_list.append(f"\n**FIIs:** {len(self.df_fiis)} registros disponíveis")
+            # Adicionar insights sobre as colunas disponíveis
+            colunas_numericas = self.df_fiis.select_dtypes(include=['number']).columns
+            if len(colunas_numericas) > 0:
+                resumo_estatistico_list.append(f"Métricas numéricas: {', '.join(colunas_numericas.tolist())}")
+                resumo_estatistico_list.append("\nEstatísticas descritivas:")
+                resumo_estatistico_list.append(self.df_fiis.describe().to_string())
 
-        contexto += f"\nVocê tem acesso ao máximo de dados possível (limitado por tokens da IA). Total de caracteres do contexto: {len(contexto)}. Use todos os dados disponíveis para fornecer análises financeiras detalhadas, comparações precisas, identificação de tendências, recomendações de investimento, análise de risco, e qualquer análise que o usuário solicitar.\n\n"
+        if not self.df_carteiras_acoes.empty:
+            resumo_estatistico_list.append(f"\n**Carteira de Ações:** {len(self.df_carteiras_acoes)} itens")
+            colunas_numericas = self.df_carteiras_acoes.select_dtypes(include=['number']).columns
+            if len(colunas_numericas) > 0:
+                resumo_estatistico_list.append(f"Métricas numéricas: {', '.join(colunas_numericas.tolist())}")
+                resumo_estatistico_list.append("\nEstatísticas descritivas:")
+                resumo_estatistico_list.append(self.df_carteiras_acoes.describe().to_string())
 
-        return contexto
+        if not self.df_carteiras_fiis.empty:
+            resumo_estatistico_list.append(f"\n**Carteira de FIIs:** {len(self.df_carteiras_fiis)} itens")
+            colunas_numericas = self.df_carteiras_fiis.select_dtypes(include=['number']).columns
+            if len(colunas_numericas) > 0:
+                resumo_estatistico_list.append(f"Métricas numéricas: {', '.join(colunas_numericas.tolist())}")
+                resumo_estatistico_list.append("\nEstatísticas descritivas:")
+                resumo_estatistico_list.append(self.df_carteiras_fiis.describe().to_string())
+
+
+
+        resumo_estatistico = "\n".join(resumo_estatistico_list)
+
+        # 5. DIRETRIZES DE RESPOSTA FLEXÍVEIS
+        diretrizes = """\n**DIRETRIZES DE RESPOSTA:**
+
+**🎯 Objetivo Principal:**
+Forneça análises úteis, insights valiosos e orientações práticas baseadas nos dados. Seja o consultor financeiro que o usuário precisa.
+
+**💡 Abordagem:**
+- **Priorize a utilidade:** Foque no que é mais útil e acionável para o usuário
+- **Use sua expertise:** Aplique conhecimento de mercado, tendências e melhores práticas de investimento
+- **Seja contextual:** Considere o cenário econômico brasileiro e características do mercado local
+- **Formato inteligente:** Use Markdown para organizar informações (tabelas, listas, destaques)
+
+**📋 Flexibilidade de Conteúdo:**
+- **Dados primários:** Base suas análises nos dados fornecidos
+- **Conhecimento complementar:** Adicione contexto de mercado, explicações de conceitos e perspectivas quando relevante
+- **Perguntas abertas:** Para questões fora do escopo financeiro, responda normalmente e conecte de volta aos dados quando apropriado
+- **Criatividade analítica:** Explore correlações, padrões e insights únicos nos dados
+
+**🔍 Tipos de Análise Sugeridos:**
+- Comparações e rankings personalizados
+- Identificação de oportunidades e riscos
+- Análise setorial e de diversificação
+- Projeções e cenários baseados nos fundamentos
+- Recomendações de alocação e estratégia
+- Alertas e pontos de atenção específicos
+
+**⚖️ Responsabilidade:**
+Suas análises são para fins educacionais e informativos. Encoraje o usuário a fazer sua própria pesquisa e considerar seu perfil de risco, mas forneça insights valiosos que ajudem na tomada de decisão.
+
+---"""
+
+        # --- MONTAGEM FINAL DO PROMPT ---
+        prompt_final = "\n\n".join([persona, contexto_dados, dados_str, resumo_estatistico, diretrizes])
+
+        return prompt_final
 
     def atualizar_resposta_ia(self, resposta):
         """Atualiza a resposta da IA no chat."""
@@ -773,10 +873,16 @@ Responda de forma clara e objetiva, baseando-se nos dados fornecidos quando rele
                                    background=self.cor_fundo if self.tema_escuro else "#f0f0f0",
                                    foreground=self.cor_destaque)
 
+        # Tag para tabelas (fonte monoespaçada para alinhamento)
+        self.chat_area.tag_configure("tabela",
+                                     font=("Consolas", 9),
+                                     lmargin1=20, lmargin2=20)
+
         # Tag para títulos
         self.chat_area.tag_configure("titulo",
                                    font=("Segoe UI", 12, "bold"),
-                                   foreground=self.cor_destaque)
+                                   foreground=self.cor_destaque,
+                                   spacing3=5) # Espaço abaixo do título
 
         # Tag para listas
         self.chat_area.tag_configure("lista",
@@ -792,90 +898,104 @@ Responda de forma clara e objetiva, baseando-se nos dados fornecidos quando rele
         linhas = texto.split('\n')
 
         for linha in linhas:
-            linha = linha.strip()
-            if not linha:
+            # Lidar com linhas vazias
+            if not linha.strip():
                 segmentos.append(("\n", "normal"))
                 continue
 
-            # Títulos (# texto)
-            if re.match(r'^#{1,6}\s+', linha):
-                titulo_texto = re.sub(r'^#{1,6}\s+', '', linha)
-                segmentos.append((titulo_texto + "\n", "titulo"))
+            # Títulos (ex: ### Título)
+            match_titulo = re.match(r'^(#{1,6})\s+(.*)', linha)
+            if match_titulo:
+                conteudo = match_titulo.group(2).strip()
+                segmentos.extend(self.processar_formatacao_inline(conteudo))
+                segmentos.append(("\n", "titulo"))
+                continue
 
-            # Listas (- item ou 1. item)
-            elif re.match(r'^[-\*\+]\s+', linha):
-                lista_texto = re.sub(r'^[-\*\+]\s+', '• ', linha)
-                segmentos.append((lista_texto + "\n", "lista"))
+            # Tabelas (linhas que começam e terminam com |)
+            if linha.strip().startswith('|') and linha.strip().endswith('|'):
+                if '---' in linha: # Ignorar a linha de separação
+                    continue
+                # Adicionar a linha da tabela com a tag de tabela
+                segmentos.append((linha.strip() + "\n", "tabela"))
+                continue
 
-            elif re.match(r'^\d+\.\s+', linha):
-                lista_texto = re.sub(r'^\d+\.\s+', '→ ', linha)
-                segmentos.append((lista_texto + "\n", "lista"))
+            # Listas não ordenadas (ex: * item or - item)
+            match_lista_nao_ord = re.match(r'^\s*([-\*])\s+(.*)', linha)
+            if match_lista_nao_ord:
+                conteudo = match_lista_nao_ord.group(2).strip()
+                segmentos.append(("• ", "lista")) # Adiciona o marcador
+                segmentos.extend(self.processar_formatacao_inline(conteudo))
+                segmentos.append(("\n", "lista"))
+                continue
 
-            else:
-                # Processar formatação inline
-                self.processar_formatacao_inline(linha + "\n", segmentos)
+            # Listas ordenadas (ex: 1. item)
+            match_lista_ord = re.match(r'^\s*(\d+\.)\s+(.*)', linha)
+            if match_lista_ord:
+                marcador = match_lista_ord.group(1)
+                conteudo = match_lista_ord.group(2).strip()
+                segmentos.append((f"{marcador} ", "lista")) # Mantém o número
+                segmentos.extend(self.processar_formatacao_inline(conteudo))
+                segmentos.append(("\n", "lista"))
+                continue
+
+            # Linha horizontal (---, ***, ___)
+            if re.match(r'^\s*([-*_]){3,}\s*$', linha):
+                segmentos.append(("\n" + "─" * 80 + "\n", "normal"))
+                continue
+
+            # Parágrafo normal
+            segmentos.extend(self.processar_formatacao_inline(linha.strip()))
+            segmentos.append(("\n", "normal"))
 
         return segmentos
 
-    def processar_formatacao_inline(self, texto, segmentos):
+    def processar_formatacao_inline(self, texto):
         """Processa formatação inline como negrito, itálico e código."""
-        pos = 0
+        # A ordem dos padrões é crucial para que `**` seja verificado antes de `*`.
+        patterns = re.compile(r'(\*\*.*?\*\*|\*.*?\*|`.*?`)')
+        segmentos = []
 
-        # Procurar por padrões de markdown
-        patterns = [
-            (r'\*\*(.*?)\*\*', 'negrito'),  # **texto**
-            (r'\*(.*?)\*', 'italico'),      # *texto*
-            (r'`(.*?)`', 'codigo')          # `texto`
-        ]
+        # Usa re.split para quebrar o texto pelos padrões de formatação, mantendo os delimitadores
+        parts = patterns.split(texto)
 
-        # Encontrar todas as ocorrências
-        matches = []
-        for pattern, tag in patterns:
-            for match in re.finditer(pattern, texto):
-                matches.append((match.start(), match.end(), match.group(1), tag))
+        for part in parts:
+            if not part:
+                continue
 
-        # Ordenar por posição
-        matches.sort(key=lambda x: x[0])
+            # Verifica se a parte corresponde a um dos padrões de formatação
+            if part.startswith('**') and part.endswith('**'):
+                segmentos.append((part[2:-2], 'negrito'))
+            elif part.startswith('*') and part.endswith('*'):
+                segmentos.append((part[1:-1], 'italico'))
+            elif part.startswith('`') and part.endswith('`'):
+                segmentos.append((part[1:-1], 'codigo'))
+            else:
+                # Se não for um padrão conhecido, é texto normal
+                segmentos.append((part, 'normal'))
 
-        # Processar texto com formatação
-        for start, end, content, tag in matches:
-            # Adicionar texto antes da formatação
-            if pos < start:
-                segmentos.append((texto[pos:start], "normal"))
-
-            # Adicionar texto formatado
-            segmentos.append((content, tag))
-            pos = end
-
-        # Adicionar texto restante
-        if pos < len(texto):
-            segmentos.append((texto[pos:], "normal"))
+        return segmentos
 
     def adicionar_mensagem_chat(self, remetente, mensagem, tipo):
-        """Adiciona uma mensagem ao chat."""
+        """Adiciona uma mensagem ao chat com formatação Markdown aprimorada."""
         self.chat_area.config(state=tk.NORMAL)
 
-        # Adicionar timestamp
-        timestamp = datetime.now().strftime("%H:%M:%S")
+        # Adicionar espaço se não for a primeira mensagem
+        if self.chat_area.get("1.0", tk.END).strip():
+            self.chat_area.insert(tk.END, "\n\n")
 
         # Inserir cabeçalho da mensagem
-        self.chat_area.insert(tk.END, f"\n[{timestamp}] {remetente}:\n")
+        timestamp = datetime.now().strftime("%H:%M:%S")
+        self.chat_area.insert(tk.END, f"[{timestamp}] {remetente}:\n", ("negrito",))
 
-        # Processar markdown se for resposta da IA
+        # Processar e inserir a mensagem
         if tipo == "bot":
-            segmentos = self.renderizar_markdown(mensagem)
+            # Limpar a resposta de caracteres indesejados que a IA pode retornar
+            mensagem_limpa = re.sub(r'```markdown|```', '', mensagem).strip()
+            segmentos = self.renderizar_markdown(mensagem_limpa)
             for texto, tag in segmentos:
-                if tag == "normal":
-                    self.chat_area.insert(tk.END, texto)
-                else:
-                    start_pos = self.chat_area.index(tk.END + "-1c")
-                    self.chat_area.insert(tk.END, texto)
-                    end_pos = self.chat_area.index(tk.END + "-1c")
-                    self.chat_area.tag_add(tag, start_pos, end_pos)
-        else:
+                self.chat_area.insert(tk.END, texto, (tag,) if tag != "normal" else ())
+        else: # tipo == "user"
             self.chat_area.insert(tk.END, mensagem)
-
-        self.chat_area.insert(tk.END, "\n")
 
         self.chat_area.config(state=tk.DISABLED)
         self.chat_area.see(tk.END)
@@ -913,11 +1033,7 @@ Responda de forma clara e objetiva, baseando-se nos dados fornecidos quando rele
             csv_acoes = self.df_acoes.to_csv(index=False)
             dados_completos += csv_acoes + "\n"
 
-        if not self.df_carteiras.empty:
-            dados_completos += "=== DADOS DE CARTEIRAS ===\n"
-            # Converter para CSV string
-            csv_carteiras = self.df_carteiras.to_csv(index=False)
-            dados_completos += csv_carteiras + "\n"
+
 
         # Adicionar resumo estatístico
         dados_completos += "=== RESUMO ESTATÍSTICO ===\n"
@@ -929,63 +1045,119 @@ Responda de forma clara e objetiva, baseando-se nos dados fornecidos quando rele
                 dados_completos += self.df_acoes[numeric_cols].describe().to_csv()
                 dados_completos += "\n"
 
-        if not self.df_carteiras.empty:
-            dados_completos += f"CARTEIRAS: {len(self.df_carteiras)} registros\n"
-            numeric_cols = self.df_carteiras.select_dtypes(include=['number']).columns
-            if len(numeric_cols) > 0:
-                dados_completos += self.df_carteiras[numeric_cols].describe().to_csv()
+
 
         return dados_completos
 
     def processar_dados_csv(self, dados_csv):
         """Processa os dados com a IA."""
         try:
-            # Prompt para análise dos dados CSV
-            prompt_csv = f"""Você é um analista financeiro especializado em ações brasileiras. Analise os seguintes dados financeiros extraídos do site Investidor10:
+            # Prompt para análise dos dados CSV aprimorado
+            prompt_csv = f"""
+**PERSONA:**
+Você é um analista financeiro sênior e estrategista de investimentos, especializado no mercado brasileiro. Sua expertise inclui análise fundamentalista, gestão de portfólio, identificação de tendências e avaliação de riscos. Você fornece insights valiosos que combinam rigor técnico com perspectiva prática do mercado.
 
+**CONTEXTO:**
+Você está analisando dados fundamentalistas extraídos do Investidor10, focando em ações brasileiras e composição de carteiras. O objetivo é fornecer uma análise completa que ajude na tomada de decisões de investimento.
+
+**DADOS PARA ANÁLISE:**
+```csv
 {dados_csv}
+```
 
-## ANÁLISE SOLICITADA:
+**MISSÃO:**
+Realize uma análise financeira abrangente e estratégica. Seja criativo, perspicaz e útil. Explore os dados de múltiplas perspectivas e forneça insights que vão além do óbvio. Use sua expertise para identificar oportunidades, riscos e padrões únicos.
 
-### 1. RESUMO EXECUTIVO
-- Visão geral das empresas analisadas
-- Número total de ações e setores representados
-- Principais características do portfólio
+---
 
-### 2. ANÁLISE FUNDAMENTALISTA
-- **Valuation**: Análise de P/L, P/VP, EV/EBITDA
-- **Rentabilidade**: ROE, ROA, ROIC e margens
-- **Crescimento**: Evolução de receitas e lucros
-- **Solidez**: Endividamento e liquidez
-- **Dividendos**: Dividend Yield e payout
+## 📋 ESTRUTURA SUGERIDA (Adapte conforme necessário)
 
-### 3. RANKING DE QUALIDADE
-- Top 5 melhores oportunidades (justifique com múltiplos)
-- Top 5 ações com maior risco (identifique red flags)
-- Ações com melhor relação risco/retorno
+### 🎯 1. VISÃO GERAL ESTRATÉGICA
+**Análise do universo de investimentos:**
+- Perfil das empresas (setores, tamanhos, características)
+- Qualidade geral do portfólio/lista de ações
+- Pontos fortes e fracos do conjunto
+- Oportunidades e desafios identificados
 
-### 4. ANÁLISE SETORIAL
+### 📊 2. ANÁLISE FUNDAMENTALISTA PROFUNDA
+
+#### **Valuation e Atratividade**
+- Ações com melhor relação preço/valor
+- Múltiplos atrativos vs. caros
+- Comparação com médias históricas (quando relevante)
+
+#### **Qualidade e Rentabilidade**
+- Empresas com melhor geração de valor
+- Eficiência operacional e financeira
+- Sustentabilidade dos resultados
+
+#### **Solidez Financeira**
+- Saúde do balanço e estrutura de capital
+- Capacidade de enfrentar cenários adversos
+- Flexibilidade financeira
+
+#### **Política de Dividendos**
+- Melhores pagadoras e sustentabilidade
+- Análise de payout e histórico
+- Potencial de crescimento dos proventos
+
+### 🏆 3. RANKINGS E RECOMENDAÇÕES
+
+#### **Top Picks (Oportunidades de Destaque)**
+Liste as melhores oportunidades com justificativas sólidas baseadas nos dados.
+
+#### **Ações para Monitorar**
+Empresas com potencial mas que requerem acompanhamento.
+
+#### **Red Flags e Cuidados**
+Identifique riscos específicos e ações que merecem cautela.
+
+### 🎯 4. ESTRATÉGIAS DE PORTFÓLIO
+
+#### **Diversificação Setorial**
 - Concentração por setor
-- Setores mais atrativos vs. setores em alerta
-- Comparação de múltiplos dentro dos setores
+- Sugestões de balanceamento
+- Riscos de concentração
 
-### 5. RECOMENDAÇÕES ESTRATÉGICAS
-- **COMPRA FORTE**: Ações subvalorizadas com fundamentos sólidos
-- **MANTER**: Ações bem posicionadas mas com preço justo
-- **EVITAR**: Ações supervalorizadas ou com problemas fundamentais
-- Sugestão de peso ideal para cada ação no portfólio
+#### **Perfis de Investimento**
+- Estratégia para dividendos
+- Estratégia para crescimento
+- Estratégia para valor
+- Estratégia equilibrada
 
-### 6. ALERTAS E RISCOS
-- Empresas com métricas preocupantes
-- Setores com risco elevado
-- Concentração excessiva em determinados segmentos
+### 🔍 5. INSIGHTS ÚNICOS E CORRELAÇÕES
+Explore padrões interessantes, correlações inesperadas ou insights únicos que você identifica nos dados.
 
-### 7. OPORTUNIDADES ESPECIAIS
-- Ações com potencial de recuperação
-- Dividendos acima da média
-- Empresas em crescimento sustentável
+### ⚠️ 6. CENÁRIOS E RISCOS
+- Análise de sensibilidade
+- Principais riscos a monitorar
+- Impactos de diferentes cenários econômicos
 
-**IMPORTANTE**: Base suas análises exclusivamente nos dados fornecidos. Seja específico ao mencionar números e métricas. Priorize clareza e objetividade nas recomendações."""
+### 💡 7. CONCLUSÕES E PRÓXIMOS PASSOS
+- Principais takeaways
+- Ações recomendadas para o investidor
+- Pontos de atenção para acompanhamento
+
+---
+
+## 🎨 DIRETRIZES CRIATIVAS
+
+**Seja Abrangente:** Não se limite apenas aos dados - use seu conhecimento do mercado brasileiro para contextualizar e enriquecer a análise.
+
+**Seja Prático:** Foque em insights acionáveis e recomendações que o investidor possa implementar.
+
+**Seja Inovador:** Explore ângulos únicos de análise e correlações interessantes.
+
+**Use Visualização:** Crie tabelas comparativas, rankings e estruture informações de forma clara.
+
+**Contextualize:** Considere o momento atual do mercado brasileiro e tendências relevantes.
+
+**Personalize:** Adapte a estrutura conforme os dados disponíveis - se não há dados de certo tipo, foque no que está disponível.
+
+---
+
+**LEMBRE-SE:** Sua análise será usada para decisões reais de investimento. Seja rigoroso com os dados, mas criativo na interpretação e apresentação dos insights.
+"""
 
             # Gerar resposta
             response = self.model.generate_content(prompt_csv)

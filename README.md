@@ -66,8 +66,8 @@ Após a extração, uma nova tela é aberta automaticamente com funcionalidades 
 - [⚠️ Observações Importantes](#️-observações-importantes)
 - [❓ FAQ - Perguntas Frequentes](#-faq---perguntas-frequentes)
 - [🔧 Solução de Problemas](#-solução-de-problemas)
+- [☕ Apoie o Projeto - Buy me a Coffee](#-apoie-o-projeto---buy-me-a-coffee)
 - [🤝 Contribuição](#-contribuição)
-- [☕ Apoie o Projeto](#-apoie-o-projeto)
 - [📄 Licença](#-licença)
 - [🙏 Agradecimentos](#-agradecimentos)
 
@@ -498,6 +498,28 @@ google-chrome --version
 # Testar WebDriver
 python -c "from selenium import webdriver; from webdriver_manager.chrome import ChromeDriverManager; print('✅ WebDriver OK')"
 ```
+
+## ☕ Apoie o Projeto - Buy me a Coffee
+
+Se este projeto foi útil para você e quiser apoiar o desenvolvimento contínuo, considere fazer uma doação via PIX! ❤️
+
+**🎯 Por que apoiar?**
+
+- 🚀 **Desenvolvimento contínuo**: Novas funcionalidades e melhorias
+- 🐛 **Correção de bugs**: Manutenção e estabilidade
+- 📚 **Documentação**: Guias e tutoriais detalhados
+- 💡 **Suporte à comunidade**: Resposta a dúvidas e issues
+- 🤖 **Recursos de IA**: Melhoria das funcionalidades inteligentes
+
+### 💰 Doação via PIX
+
+![PIX QR Code](screenshots/coffee.png)
+
+**📱 Chave PIX ou escaneie o QR Code acima**
+
+🙏 **Qualquer valor é muito bem-vindo e ajuda a manter o projeto ativo!**
+
+---
 
 ## 🤝 Contribuição
 

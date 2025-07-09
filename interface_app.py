@@ -60,7 +60,7 @@ class InvestidorApp:
 
         # Configurar tamanho da janela
         window_width = 1200
-        window_height = 720
+        window_height = 820
         self.root.minsize(1000, 600)
 
         # Definir tamanho inicial sem posição (será centralizada depois)
@@ -103,7 +103,9 @@ class InvestidorApp:
 
         # DataFrames para armazenar resultados
         self.df_acoes = pd.DataFrame()
-        self.df_carteiras = pd.DataFrame()
+        self.df_fiis = pd.DataFrame()
+        self.df_carteiras_acoes = pd.DataFrame()
+        self.df_carteiras_fiis = pd.DataFrame()
 
         # Criar interface
         self.criar_interface()
@@ -329,7 +331,9 @@ class InvestidorApp:
         """Carrega as configurações do arquivo JSON."""
         default_config_values = {
             "acoes": [],
+            "fiis": [],
             "colunas_personalizadas": [],
+            "colunas_personalizadas_fiis": [],
             "headless": False,
             "tema": "escuro",
             "mostrar_mensagem_inicial": True
@@ -364,8 +368,22 @@ class InvestidorApp:
         else:
             final_config["acoes"] = []
 
+        if "fiis" in final_config and isinstance(final_config["fiis"], list):
+            fiis_normalizados = []
+            for fii_item in final_config["fiis"]:
+                if isinstance(fii_item, str):
+                    fii_limpo = fii_item.strip().upper()
+                    if fii_limpo:
+                        fiis_normalizados.append(fii_limpo)
+            final_config["fiis"] = fiis_normalizados
+        else:
+            final_config["fiis"] = []
+
         if not isinstance(final_config.get("colunas_personalizadas"), list):
             final_config["colunas_personalizadas"] = []
+
+        if not isinstance(final_config.get("colunas_personalizadas_fiis"), list):
+            final_config["colunas_personalizadas_fiis"] = []
         else:
             for coluna in final_config["colunas_personalizadas"]:
                 coluna.setdefault("formato_excel", "Texto")
@@ -392,12 +410,24 @@ class InvestidorApp:
         main_frame = tk.Frame(self.root, bg=self.cor_fundo)
         main_frame.pack(fill=tk.BOTH, expand=True, padx=15, pady=10)
 
-        # Criar frame principal diretamente (sem notebook/abas)
-        self.tab_config = tk.Frame(main_frame, bg=self.cor_fundo_secundario)
-        self.tab_config.pack(fill=tk.BOTH, expand=True, pady=(10, 0))
+        # Criar notebook para abas de ações e FIIs
+        self.notebook = ttk.Notebook(main_frame)
+        self.notebook.pack(fill=tk.BOTH, expand=True, pady=(10, 0))
 
-        # Configurar interface principal
-        self.configurar_tab_config()
+        # Aba de Ações
+        self.tab_acoes = tk.Frame(self.notebook, bg=self.cor_fundo_secundario)
+        self.notebook.add(self.tab_acoes, text="📈 Ações")
+
+        # Aba de FIIs
+        self.tab_fiis = tk.Frame(self.notebook, bg=self.cor_fundo_secundario)
+        self.notebook.add(self.tab_fiis, text="🏢 FIIs")
+
+        # Configurar interfaces das abas (SEM as opções compartilhadas)
+        self.configurar_tab_acoes()
+        self.configurar_tab_fiis()
+
+        # Criar área compartilhada na parte inferior (ÚNICA)
+        self._criar_area_compartilhada_inferior(main_frame)
 
         # Adicionar menu de ajuda
         self.criar_menu_ajuda()
@@ -412,6 +442,8 @@ class InvestidorApp:
         help_menu.add_command(label="Atalhos de Teclado", command=self.mostrar_atalhos)
         help_menu.add_separator()
         help_menu.add_command(label="Configuração Inicial", command=self.mostrar_configuracao_inicial)
+        help_menu.add_separator()
+        help_menu.add_command(label="☕ Buy me a Coffee", command=self.mostrar_buy_coffee)
         help_menu.add_separator()
         help_menu.add_command(label="Sobre", command=self.mostrar_sobre)
 
@@ -450,7 +482,150 @@ class InvestidorApp:
                 """
         messagebox.showinfo("Sobre", sobre)
 
-    
+    def mostrar_buy_coffee(self):
+        """Mostra a janela de apoio ao projeto com QR Code do PIX."""
+        import os
+        from tkinter import Label
+        from PIL import Image, ImageTk
+
+        # Criar janela personalizada
+        janela_coffee = tk.Toplevel(self.root)
+        janela_coffee.title("☕ Apoie o Projeto - Buy me a Coffee")
+        janela_coffee.geometry("500x750")
+        janela_coffee.resizable(False, False)
+        janela_coffee.configure(bg=self.cor_fundo)
+
+        # Centralizar a janela
+        janela_coffee.transient(self.root)
+        janela_coffee.grab_set()
+
+        # Calcular posição central
+        janela_coffee.update_idletasks()
+        x = (janela_coffee.winfo_screenwidth() // 2) - (500 // 2)
+        y = (janela_coffee.winfo_screenheight() // 2) - (750 // 2)
+        janela_coffee.geometry(f"500x650+{x}+{y}")
+
+        # Frame principal
+        frame_principal = tk.Frame(janela_coffee, bg=self.cor_fundo, padx=30, pady=20)
+        frame_principal.pack(fill=tk.BOTH, expand=True)
+
+        # Título
+        titulo = tk.Label(frame_principal,
+                         text="☕ Apoie o Projeto",
+                         font=("Segoe UI", 18, "bold"),
+                         bg=self.cor_fundo, fg=self.cor_texto)
+        titulo.pack(pady=(0, 10))
+
+        # Subtítulo
+        subtitulo = tk.Label(frame_principal,
+                           text="Buy me a Coffee",
+                           font=("Segoe UI", 14),
+                           bg=self.cor_fundo, fg=self.cor_texto_secundario)
+        subtitulo.pack(pady=(0, 20))
+
+        # Texto de motivação
+        motivacao = """Se este projeto foi útil para você e quiser apoiar o
+desenvolvimento contínuo, considere fazer uma doação via PIX! ❤️"""
+
+        texto_motivacao = tk.Label(frame_principal,
+                                 text=motivacao,
+                                 font=("Segoe UI", 11),
+                                 bg=self.cor_fundo, fg=self.cor_texto,
+                                 wraplength=400, justify=tk.CENTER)
+        texto_motivacao.pack(pady=(0, 20))
+
+        # Tentar carregar e exibir a imagem do QR Code
+        try:
+            caminho_imagem = os.path.join("screenshots", "coffee.png")
+            if os.path.exists(caminho_imagem):
+                # Abrir imagem e redimensionar se necessário
+                img = Image.open(caminho_imagem)
+
+                # Redimensionar mantendo proporção (máximo 300x300)
+                img.thumbnail((300, 300), Image.Resampling.LANCZOS)
+                photo = ImageTk.PhotoImage(img)
+
+                label_img = tk.Label(frame_principal, image=photo, bg=self.cor_fundo)
+                label_img.image = photo  # Manter referência
+                label_img.pack(pady=(0, 20))
+            else:
+                # Se a imagem não existir, mostrar texto alternativo
+                label_img = tk.Label(frame_principal,
+                                   text="📱 QR Code PIX\n\n(Imagem não encontrada: screenshots/coffee.png)",
+                                   font=("Segoe UI", 12),
+                                   bg=self.cor_fundo_secundario,
+                                   fg=self.cor_texto,
+                                   relief=tk.RIDGE,
+                                   bd=1,
+                                   padx=20,
+                                   pady=30)
+                label_img.pack(pady=(0, 20))
+        except ImportError:
+            # Se PIL não estiver disponível, mostrar texto
+            label_img = tk.Label(frame_principal,
+                               text="📱 QR Code PIX\n\n(Para visualizar o QR Code, instale a biblioteca Pillow:\npip install Pillow)",
+                               font=("Segoe UI", 11),
+                               bg=self.cor_fundo_secundario,
+                               fg=self.cor_texto,
+                               relief=tk.RIDGE,
+                               bd=1,
+                               padx=20,
+                               pady=20,
+                               wraplength=350,
+                               justify=tk.CENTER)
+            label_img.pack(pady=(0, 20))
+        except Exception as e:
+            # Em caso de outros erros
+            label_img = tk.Label(frame_principal,
+                               text=f"📱 QR Code PIX\n\n(Erro ao carregar imagem: {str(e)})",
+                               font=("Segoe UI", 11),
+                               bg=self.cor_fundo_secundario,
+                               fg=self.cor_texto,
+                               relief=tk.RIDGE,
+                               bd=1,
+                               padx=20,
+                               pady=20,
+                               wraplength=350,
+                               justify=tk.CENTER)
+            label_img.pack(pady=(0, 20))
+
+        # Instrução
+        instrucao = tk.Label(frame_principal,
+                           text="📱 Escaneie o QR Code acima com seu app bancário",
+                           font=("Segoe UI", 12, "bold"),
+                           bg=self.cor_fundo, fg=self.cor_destaque)
+        instrucao.pack(pady=(0, 15))
+
+        # Benefícios
+        beneficios = """🎯 Por que apoiar?
+
+🚀 Desenvolvimento contínuo - Novas funcionalidades
+🐛 Correção de bugs - Manutenção e estabilidade
+📚 Documentação - Guias e tutoriais detalhados
+💡 Suporte à comunidade - Resposta a dúvidas
+🤖 Recursos de IA - Melhoria das funcionalidades"""
+
+        texto_beneficios = tk.Label(frame_principal,
+                                  text=beneficios,
+                                  font=("Segoe UI", 10),
+                                  bg=self.cor_fundo, fg=self.cor_texto_secundario,
+                                  justify=tk.LEFT)
+        texto_beneficios.pack(pady=(0, 20))
+
+        # Botão fechar
+        btn_fechar = tk.Button(frame_principal,
+                              text="Fechar",
+                              command=janela_coffee.destroy,
+                              bg=self.cor_botao_ativo,
+                              fg="white",
+                              font=("Segoe UI", 12, "bold"),
+                              padx=30,
+                              pady=10,
+                              relief=tk.FLAT,
+                              cursor="hand2")
+        btn_fechar.pack()
+
+
 
     def mostrar_configuracao_inicial(self):
         """Mostra a mensagem de configuração inicial e permite reativar as notificações."""
@@ -600,15 +775,15 @@ class InvestidorApp:
                               cursor="hand2")
         btn_fechar.pack(side=tk.RIGHT)
 
-    def configurar_tab_config(self):
-        """Configura a aba principal com layout moderno e responsivo."""
+    def configurar_tab_acoes(self):
+        """Configura a aba de ações com layout moderno e responsivo."""
         # Container principal com padding otimizado
-        container_principal = tk.Frame(self.tab_config, bg=self.cor_fundo_secundario)
+        container_principal = tk.Frame(self.tab_acoes, bg=self.cor_fundo_secundario)
         container_principal.pack(fill=tk.BOTH, expand=True, padx=20, pady=15)
 
         # Frame principal com duas colunas para Ações e Colunas Personalizadas
         config_frame_principal = tk.Frame(container_principal, bg=self.cor_fundo_secundario)
-        config_frame_principal.pack(fill=tk.BOTH, expand=True, pady=(0, 5))
+        config_frame_principal.pack(fill=tk.BOTH, expand=True)
 
         # Coluna esquerda - Ações
         self._criar_frame_acoes_ui(config_frame_principal)
@@ -616,19 +791,35 @@ class InvestidorApp:
         # Coluna direita - Colunas personalizadas
         self._criar_frame_colunas_ui(config_frame_principal)
 
-        # Separador visual elegante
-        separador = tk.Frame(container_principal, height=1, bg=self.cor_borda, relief=tk.FLAT)
-        separador.pack(fill=tk.X, pady=(5, 5))
-
-        # Frame para opções e iniciar extração (abaixo das duas colunas)
-        self._criar_frame_opcoes_e_botoes_ui(container_principal)
-
         # Configurar grid weights para as colunas de Ações e Colunas Personalizadas
         config_frame_principal.grid_columnconfigure(0, weight=1)
         config_frame_principal.grid_columnconfigure(1, weight=2)  # Colunas personalizadas precisam de mais espaço
-        config_frame_principal.grid_rowconfigure(0, weight=1)    # Linha única para os frames de ações e colunas
+        config_frame_principal.grid_rowconfigure(0, weight=1)
 
         self.atualizar_contador_acoes()
+
+    def configurar_tab_fiis(self):
+        """Configura a aba de FIIs com layout moderno e responsivo."""
+        # Container principal com padding otimizado
+        container_principal = tk.Frame(self.tab_fiis, bg=self.cor_fundo_secundario)
+        container_principal.pack(fill=tk.BOTH, expand=True, padx=20, pady=15)
+
+        # Frame principal com duas colunas para FIIs e Colunas Personalizadas
+        config_frame_principal = tk.Frame(container_principal, bg=self.cor_fundo_secundario)
+        config_frame_principal.pack(fill=tk.BOTH, expand=True)
+
+        # Coluna esquerda - FIIs
+        self._criar_frame_fiis_ui(config_frame_principal)
+
+        # Coluna direita - Colunas personalizadas para FIIs
+        self._criar_frame_colunas_fiis_ui(config_frame_principal)
+
+        # Configurar grid weights para as colunas de FIIs e Colunas Personalizadas
+        config_frame_principal.grid_columnconfigure(0, weight=1)
+        config_frame_principal.grid_columnconfigure(1, weight=2)  # Colunas personalizadas precisam de mais espaço
+        config_frame_principal.grid_rowconfigure(0, weight=1)
+
+        self.atualizar_contador_fiis()
 
     def _criar_frame_acoes_ui(self, parent_frame):
         """Cria o frame de ações com design moderno e elegante."""
@@ -891,10 +1082,284 @@ class InvestidorApp:
 
         return frame_colunas
 
+    def _criar_frame_fiis_ui(self, parent_frame):
+        """Cria o frame de FIIs com design moderno e elegante."""
+        frame_fiis = tk.LabelFrame(parent_frame, text="🏢  FIIs", bg=self.cor_fundo_secundario,
+                                   fg=self.cor_texto, font=self.title_font,
+                                   relief=tk.FLAT, bd=2, highlightbackground=self.cor_borda,
+                                   padx=15, pady=15)
+        frame_fiis.grid(row=0, column=0, padx=(0, 15), pady=0, sticky="nsew")
+
+        # Container para lista de FIIs com estilo moderno
+        container_lista = tk.Frame(frame_fiis, bg=self.cor_fundo_secundario)
+        container_lista.pack(fill=tk.BOTH, expand=True, pady=(0, 10))
+
+        # Frame para lista e scrollbar
+        frame_lista_fiis = tk.Frame(container_lista, bg=self.cor_fundo_secundario)
+        frame_lista_fiis.pack(fill=tk.BOTH, expand=True)
+
+        # Scrollbar com estilo moderno
+        scrollbar = tk.Scrollbar(frame_lista_fiis, bg=self.cor_botao,
+                                troughcolor=self.cor_fundo_terciario,
+                                activebackground=self.cor_botao_hover,
+                                width=14)
+        scrollbar.pack(side=tk.RIGHT, fill=tk.Y, padx=(8, 0))
+
+        self.listbox_fiis = tk.Listbox(frame_lista_fiis,
+                                         bg=self.cor_lista,
+                                         fg=self.cor_texto,
+                                         selectbackground=self.cor_destaque,
+                                         selectforeground="white",
+                                         height=18,
+                                         width=28,
+                                         yscrollcommand=scrollbar.set,
+                                         relief=tk.FLAT,
+                                         bd=1,
+                                         highlightthickness=1,
+                                         highlightcolor=self.cor_borda_foco,
+                                         font=self.default_font,
+                                         activestyle='none')
+        self.listbox_fiis.pack(side=tk.LEFT, fill=tk.BOTH, expand=True)
+        scrollbar.config(command=self.listbox_fiis.yview)
+
+        # Adicionar tooltip para a lista de FIIs
+        ToolTip(self.listbox_fiis, "Lista de FIIs para extração de dados\nClique para selecionar")
+        self.listbox_fiis.tooltip_shortcut = "Ctrl+F para adicionar, Ctrl+D para remover"
+
+        for fii in self.config["fiis"]:
+            self.listbox_fiis.insert(tk.END, fii)
+
+        # Frame contador com estilo moderno
+        frame_contador_fiis = tk.Frame(frame_fiis, bg=self.cor_fundo_secundario)
+        frame_contador_fiis.pack(fill=tk.X, pady=(0, 10))
+
+        self.lbl_contador_fiis = tk.Label(frame_contador_fiis, text="FIIs: 0",
+                                          bg=self.cor_fundo_secundario,
+                                          fg=self.cor_texto_secundario,
+                                          font=self.small_font)
+        self.lbl_contador_fiis.pack(side=tk.LEFT)
+
+        # Frame controle com layout moderno
+        frame_controle_fiis = tk.Frame(frame_fiis, bg=self.cor_fundo_secundario)
+        frame_controle_fiis.pack(fill=tk.X)
+
+        # Campo de entrada com design moderno
+        self.entry_fii = tk.Entry(frame_controle_fiis,
+                                  bg=self.cor_entrada,
+                                  fg=self.cor_texto,
+                                  relief=tk.FLAT,
+                                  bd=1,
+                                  highlightthickness=2,
+                                  highlightcolor=self.cor_borda_foco,
+                                  highlightbackground=self.cor_borda,
+                                  font=self.default_font,
+                                  insertbackground=self.cor_texto)
+        self.entry_fii.pack(fill=tk.X, pady=(0, 8))
+        ToolTip(self.entry_fii, "Digite o código do FII (ex: HGLG11)")
+
+        # Frame para botões com design moderno
+        frame_botoes_fiis = tk.Frame(frame_controle_fiis, bg=self.cor_fundo_secundario)
+        frame_botoes_fiis.pack(fill=tk.X)
+
+        btn_adicionar_fii = tk.Button(frame_botoes_fiis,
+                                       text="➕  Adicionar",
+                                       command=self.adicionar_fii,
+                                       bg=self.cor_botao,
+                                       fg=self.cor_texto,
+                                       font=self.button_font,
+                                       relief=tk.FLAT,
+                                       bd=0,
+                                       padx=15,
+                                       pady=6,
+                                       activebackground=self.cor_botao_hover,
+                                       activeforeground=self.cor_texto,
+                                       cursor="hand2")
+        btn_adicionar_fii.pack(side=tk.LEFT, fill=tk.X, expand=True, padx=(0, 6))
+        ToolTip(btn_adicionar_fii, "Adiciona um novo FII à lista")
+        btn_adicionar_fii.tooltip_shortcut = "Ctrl+F"
+
+        btn_remover_fii = tk.Button(frame_botoes_fiis,
+                                     text="➖  Remover",
+                                     command=self.remover_fii,
+                                     bg=self.cor_botao,
+                                     fg=self.cor_texto,
+                                     font=self.button_font,
+                                     relief=tk.FLAT,
+                                     bd=0,
+                                     padx=15,
+                                     pady=6,
+                                     activebackground=self.cor_botao_hover,
+                                     activeforeground=self.cor_texto,
+                                     cursor="hand2")
+        btn_remover_fii.pack(side=tk.LEFT, fill=tk.X, expand=True, padx=(6, 0))
+        ToolTip(btn_remover_fii, "Remove o FII selecionado da lista")
+        btn_remover_fii.tooltip_shortcut = "Ctrl+D"
+
+        return frame_fiis
+
+    def _criar_frame_colunas_fiis_ui(self, parent_frame):
+        """Cria o frame de colunas personalizadas para FIIs com design moderno."""
+        frame_colunas = tk.LabelFrame(parent_frame, text="🔧  Colunas Personalizadas (FIIs)",
+                                     bg=self.cor_fundo_secundario, fg=self.cor_texto,
+                                     font=self.title_font, relief=tk.FLAT, bd=2,
+                                     highlightbackground=self.cor_borda, padx=15, pady=15)
+        frame_colunas.grid(row=0, column=1, padx=(15, 0), pady=0, sticky="nsew")
+
+        # Container para treeview com estilo moderno
+        container_tree = tk.Frame(frame_colunas, bg=self.cor_fundo_secundario)
+        container_tree.pack(fill=tk.BOTH, expand=True, pady=(0, 10))
+
+        frame_lista_colunas = tk.Frame(container_tree, bg=self.cor_fundo_secundario)
+        frame_lista_colunas.pack(fill=tk.BOTH, expand=True)
+
+        self.tree_colunas_fiis = ttk.Treeview(frame_lista_colunas,
+                                        columns=("Nome", "Tipo", "Seletor CSS", "Formato Excel"),
+                                        show="headings", height=15, style="Custom.Treeview")
+
+        # Configurar cabeçalhos com ícones e melhor tipografia
+        self.tree_colunas_fiis.heading("Nome", text="📝  Nome")
+        self.tree_colunas_fiis.heading("Tipo", text="🔍  Tipo")
+        self.tree_colunas_fiis.heading("Seletor CSS", text="🎯  Seletor CSS")
+        self.tree_colunas_fiis.heading("Formato Excel", text="📊  Formato Excel")
+
+        # Ajustar larguras das colunas com proporções melhores
+        self.tree_colunas_fiis.column("Nome", width=140, minwidth=110)
+        self.tree_colunas_fiis.column("Tipo", width=90, minwidth=80)
+        self.tree_colunas_fiis.column("Seletor CSS", width=300, minwidth=220)
+        self.tree_colunas_fiis.column("Formato Excel", width=130, minwidth=110)
+
+        # Scrollbar moderno
+        scrollbar_colunas = tk.Scrollbar(frame_lista_colunas,
+                                        command=self.tree_colunas_fiis.yview,
+                                        bg=self.cor_botao,
+                                        troughcolor=self.cor_fundo_terciario,
+                                        activebackground=self.cor_botao_hover,
+                                        width=14)
+        self.tree_colunas_fiis.configure(yscrollcommand=scrollbar_colunas.set)
+
+        scrollbar_colunas.pack(side=tk.RIGHT, fill=tk.Y, padx=(8, 0))
+        self.tree_colunas_fiis.pack(side=tk.LEFT, fill=tk.BOTH, expand=True)
+        ToolTip(self.tree_colunas_fiis, "Lista de colunas personalizadas para extração de FIIs\nDuplo clique para editar")
+        self.tree_colunas_fiis.tooltip_shortcut = "Ctrl+M para adicionar, Del para excluir"
+
+        for coluna in self.config["colunas_personalizadas_fiis"]:
+            self.tree_colunas_fiis.insert("", tk.END, values=(coluna["nome"], coluna["tipo"],
+                                                        coluna.get("seletor_css", ""),
+                                                        coluna.get("formato_excel", "Texto")))
+
+        # Frame para botões com design moderno
+        frame_botoes_colunas = tk.Frame(frame_colunas, bg=self.cor_fundo_secundario)
+        frame_botoes_colunas.pack(fill=tk.X)
+
+        # Primeira linha de botões - ações principais
+        frame_botoes_linha1 = tk.Frame(frame_botoes_colunas, bg=self.cor_fundo_secundario)
+        frame_botoes_linha1.pack(fill=tk.X, pady=(0, 8))
+
+        btn_adicionar_coluna = tk.Button(frame_botoes_linha1,
+                                        text="➕  Adicionar",
+                                        command=self.adicionar_coluna_fii,
+                                        bg=self.cor_botao,
+                                        fg=self.cor_texto,
+                                        font=self.button_font,
+                                        relief=tk.FLAT,
+                                        bd=0,
+                                        padx=12,
+                                        pady=6,
+                                        activebackground=self.cor_botao_hover,
+                                        activeforeground=self.cor_texto,
+                                        cursor="hand2")
+        btn_adicionar_coluna.pack(side=tk.LEFT, fill=tk.X, expand=True, padx=(0, 6))
+        ToolTip(btn_adicionar_coluna, "Adiciona uma nova coluna personalizada para FIIs")
+        btn_adicionar_coluna.tooltip_shortcut = "Ctrl+M"
+
+        btn_editar_coluna = tk.Button(frame_botoes_linha1,
+                                     text="✏️  Editar",
+                                     command=self.editar_coluna_fii,
+                                     bg=self.cor_botao,
+                                     fg=self.cor_texto,
+                                     font=self.button_font,
+                                     relief=tk.FLAT,
+                                     bd=0,
+                                     padx=12,
+                                     pady=6,
+                                     activebackground=self.cor_botao_hover,
+                                     activeforeground=self.cor_texto,
+                                     cursor="hand2")
+        btn_editar_coluna.pack(side=tk.LEFT, fill=tk.X, expand=True, padx=(6, 6))
+        ToolTip(btn_editar_coluna, "Edita a coluna selecionada")
+
+        btn_excluir_coluna = tk.Button(frame_botoes_linha1,
+                                      text="🗑️  Excluir",
+                                      command=self.excluir_coluna_fii,
+                                      bg=self.cor_botao,
+                                      fg=self.cor_texto,
+                                      font=self.button_font,
+                                      relief=tk.FLAT,
+                                      bd=0,
+                                      padx=12,
+                                      pady=6,
+                                      activebackground=self.cor_botao_hover,
+                                      activeforeground=self.cor_texto,
+                                      cursor="hand2")
+        btn_excluir_coluna.pack(side=tk.LEFT, fill=tk.X, expand=True, padx=(6, 0))
+        ToolTip(btn_excluir_coluna, "Exclui a coluna selecionada")
+        btn_excluir_coluna.tooltip_shortcut = "Del"
+
+        # Segunda linha de botões - movimentação
+        frame_botoes_linha2 = tk.Frame(frame_botoes_colunas, bg=self.cor_fundo_secundario)
+        frame_botoes_linha2.pack(fill=tk.X)
+
+        btn_mover_cima = tk.Button(frame_botoes_linha2,
+                                  text="⬆️  Mover Acima",
+                                  command=lambda: self.mover_coluna_fii(-1),
+                                  bg=self.cor_botao,
+                                  fg=self.cor_texto,
+                                  font=self.button_font,
+                                  relief=tk.FLAT,
+                                  bd=0,
+                                  padx=12,
+                                  pady=6,
+                                  activebackground=self.cor_botao_hover,
+                                  activeforeground=self.cor_texto,
+                                  cursor="hand2")
+        btn_mover_cima.pack(side=tk.LEFT, fill=tk.X, expand=True, padx=(0, 6))
+        ToolTip(btn_mover_cima, "Move a coluna selecionada para cima")
+
+        btn_mover_baixo = tk.Button(frame_botoes_linha2,
+                                   text="⬇️  Mover Abaixo",
+                                   command=lambda: self.mover_coluna_fii(1),
+                                   bg=self.cor_botao,
+                                   fg=self.cor_texto,
+                                   font=self.button_font,
+                                   relief=tk.FLAT,
+                                   bd=0,
+                                   padx=12,
+                                   pady=6,
+                                   activebackground=self.cor_botao_hover,
+                                   activeforeground=self.cor_texto,
+                                   cursor="hand2")
+        btn_mover_baixo.pack(side=tk.LEFT, fill=tk.X, expand=True, padx=(6, 0))
+        ToolTip(btn_mover_baixo, "Move a coluna selecionada para baixo")
+
+        return frame_colunas
+
+    def _criar_area_compartilhada_inferior(self, parent):
+        """Cria a área compartilhada na parte inferior com opções e botões globais."""
+        # Separador visual elegante
+        separador = tk.Frame(parent, height=2, bg=self.cor_borda, relief=tk.FLAT)
+        separador.pack(fill=tk.X, pady=(10, 5))
+
+        # Frame para a área compartilhada
+        frame_compartilhado = tk.Frame(parent, bg=self.cor_fundo_secundario)
+        frame_compartilhado.pack(fill=tk.X, pady=(0, 0))
+
+        # Chamar o método original, mas apenas UMA vez
+        self._criar_frame_opcoes_e_botoes_ui(frame_compartilhado)
+
     def _criar_frame_opcoes_e_botoes_ui(self, parent_tab):
         """Cria o frame de opções e botões principais com design moderno."""
         frame_opcoes = tk.Frame(parent_tab, bg=self.cor_fundo_secundario)
-        frame_opcoes.pack(fill=tk.X, pady=(0, 0))
+        frame_opcoes.pack(fill=tk.X, pady=(10, 0))
 
         # Frame para opções de configuração com design elegante
         frame_opcoes_config = tk.LabelFrame(frame_opcoes, text="⚙️  Opções",
@@ -1207,6 +1672,247 @@ class InvestidorApp:
         num_acoes = len(self.config.get("acoes", []))
         self.lbl_contador_acoes.config(text=f"Ações: {num_acoes}")
 
+    def adicionar_fii(self):
+        """Adiciona um novo FII à lista de FIIs e à interface."""
+        fii = self.entry_fii.get().strip().upper()
+        self.entry_fii.delete(0, tk.END)
+
+        if not fii:
+            messagebox.showwarning("Aviso", "O nome do FII não pode ser vazio.")
+            return
+
+        if fii not in self.config["fiis"]:
+            self.config["fiis"].append(fii)
+            self.listbox_fiis.insert(tk.END, fii)
+            self.atualizar_contador_fiis()
+            self.atualizar_status(f"✅ FII {fii} adicionado com sucesso!", 100)
+        else:
+            messagebox.showinfo("Informação", f"FII '{fii}' já existe na lista.")
+
+    def remover_fii(self):
+        """Remove o FII selecionado da lista de FIIs e da configuração."""
+        try:
+            indice_selecionado = self.listbox_fiis.curselection()[0]
+            fii = self.listbox_fiis.get(indice_selecionado)
+
+            # Solicitar confirmação antes de remover
+            confirmacao = messagebox.askyesno(
+                "Confirmar Remoção",
+                f"Tem certeza que deseja remover o FII '{fii}'?\n\nEsta ação não pode ser desfeita.",
+                icon='warning'
+            )
+
+            if not confirmacao:
+                return
+
+            self.listbox_fiis.delete(indice_selecionado)
+            self.config["fiis"].remove(fii)
+            self.atualizar_contador_fiis()
+            self.atualizar_status(f"🗑️ FII {fii} removido com sucesso!", 100)
+        except (IndexError, ValueError):
+            messagebox.showwarning("Aviso", "Selecione um FII para remover ou FII não encontrado na configuração.")
+
+    def atualizar_contador_fiis(self):
+        num_fiis = len(self.config.get("fiis", []))
+        self.lbl_contador_fiis.config(text=f"FIIs: {num_fiis}")
+
+    def adicionar_coluna_fii(self):
+        """Abre um diálogo para adicionar uma nova coluna personalizada para FIIs."""
+        dialog, entries, combos = self._criar_e_configurar_dialogo_coluna_ui("Adicionar Coluna para FIIs")
+
+        frame_botoes = tk.Frame(dialog.winfo_children()[0], bg=self.cor_fundo)
+        frame_botoes.grid(row=6, column=0, columnspan=2, pady=15)
+
+        btn_cancelar = tk.Button(frame_botoes, text="Cancelar", command=dialog.destroy,
+                               bg=self.cor_botao, fg=self.cor_texto)
+        btn_cancelar.pack(side=tk.LEFT, padx=5)
+
+        btn_salvar = tk.Button(frame_botoes, text="Adicionar",
+                             command=lambda: self.confirmar_adicionar_coluna_fii(
+                                 entries["nome"].get(), combos["tipo"].get(),
+                                 entries["classe_busca"].get(), entries["classe_retorno"].get(),
+                                 entries["seletor_css"].get(), combos["formato_excel"].get(), dialog),
+                             bg=self.cor_botao, fg=self.cor_texto)
+        btn_salvar.pack(side=tk.LEFT, padx=5)
+
+        ToolTip(btn_cancelar, "Cancela a adição da coluna")
+        ToolTip(btn_salvar, "Adiciona a nova coluna para FIIs")
+
+    def confirmar_adicionar_coluna_fii(self, nome, tipo, classe_busca, classe_retorno, seletor, formato_excel, dialog):
+        """Confirma a adição de uma nova coluna personalizada para FIIs."""
+        if not nome:
+            messagebox.showwarning("Aviso", "O nome da coluna não pode ser vazio.")
+            return
+
+        # Verificar se o nome já existe
+        for coluna in self.config["colunas_personalizadas_fiis"]:
+            if coluna["nome"] == nome:
+                messagebox.showwarning("Aviso", f"Já existe uma coluna com o nome '{nome}'.")
+                return
+
+        nova_coluna = {
+            "nome": nome,
+            "tipo": tipo,
+            "classe_busca": classe_busca,
+            "classe_retorno": classe_retorno,
+            "seletor_css": seletor,
+            "formato_excel": formato_excel
+        }
+
+        self.config["colunas_personalizadas_fiis"].append(nova_coluna)
+        self.atualizar_treeview_colunas_fiis()
+        self.atualizar_status(f"✅ Coluna '{nome}' adicionada para FIIs!", 100)
+        dialog.destroy()
+
+    def editar_coluna_fii(self):
+        """Abre um diálogo para editar uma coluna personalizada de FIIs selecionada."""
+        try:
+            item = self.tree_colunas_fiis.selection()[0]
+            valores = self.tree_colunas_fiis.item(item, "values")
+            nome_coluna = valores[0]
+
+            # Encontrar o índice da coluna
+            indice = self.obter_indice_coluna_fii(nome_coluna)
+            if indice == -1:
+                messagebox.showerror("Erro", f"Coluna '{nome_coluna}' não encontrada.")
+                return
+
+            coluna_existente = self.config["colunas_personalizadas_fiis"][indice]
+
+            dialog, entries, combos = self._criar_e_configurar_dialogo_coluna_ui("Editar Coluna FII", coluna_existente)
+
+            frame_botoes = tk.Frame(dialog.winfo_children()[0], bg=self.cor_fundo)
+            frame_botoes.grid(row=6, column=0, columnspan=2, pady=15)
+
+            btn_cancelar = tk.Button(frame_botoes, text="Cancelar", command=dialog.destroy,
+                                   bg=self.cor_botao, fg=self.cor_texto)
+            btn_cancelar.pack(side=tk.LEFT, padx=5)
+
+            btn_salvar = tk.Button(frame_botoes, text="Salvar",
+                                 command=lambda: self.confirmar_editar_coluna_fii(
+                                     indice, entries["nome"].get(), combos["tipo"].get(),
+                                     entries["classe_busca"].get(), entries["classe_retorno"].get(),
+                                     entries["seletor_css"].get(), combos["formato_excel"].get(), item, dialog),
+                                 bg=self.cor_botao, fg=self.cor_texto)
+            btn_salvar.pack(side=tk.LEFT, padx=5)
+
+            ToolTip(btn_cancelar, "Cancela a edição")
+            ToolTip(btn_salvar, "Salva as alterações na coluna")
+
+        except IndexError:
+            messagebox.showwarning("Aviso", "Selecione uma coluna para editar.")
+
+    def confirmar_editar_coluna_fii(self, indice, nome, tipo, classe_busca, classe_retorno, seletor, formato_excel, item, dialog):
+        """Confirma a edição de uma coluna personalizada de FIIs."""
+        if not nome:
+            messagebox.showwarning("Aviso", "O nome da coluna não pode ser vazio.")
+            return
+
+        # Verificar se o nome já existe (exceto para a própria coluna)
+        for i, coluna in enumerate(self.config["colunas_personalizadas_fiis"]):
+            if i != indice and coluna["nome"] == nome:
+                messagebox.showwarning("Aviso", f"Já existe uma coluna com o nome '{nome}'.")
+                return
+
+        self.config["colunas_personalizadas_fiis"][indice] = {
+            "nome": nome,
+            "tipo": tipo,
+            "classe_busca": classe_busca,
+            "classe_retorno": classe_retorno,
+            "seletor_css": seletor,
+            "formato_excel": formato_excel
+        }
+
+        self.atualizar_treeview_colunas_fiis()
+        self.atualizar_status(f"✅ Coluna '{nome}' atualizada!", 100)
+        dialog.destroy()
+
+    def excluir_coluna_fii(self):
+        """Exclui a coluna personalizada de FIIs selecionada."""
+        try:
+            item = self.tree_colunas_fiis.selection()[0]
+            valores = self.tree_colunas_fiis.item(item, "values")
+            nome_coluna = valores[0]
+
+            confirmacao = messagebox.askyesno(
+                "Confirmar Exclusão",
+                f"Tem certeza que deseja excluir a coluna '{nome_coluna}'?\n\nEsta ação não pode ser desfeita.",
+                icon='warning'
+            )
+
+            if not confirmacao:
+                return
+
+            indice = self.obter_indice_coluna_fii(nome_coluna)
+            if indice != -1:
+                del self.config["colunas_personalizadas_fiis"][indice]
+                self.atualizar_treeview_colunas_fiis()
+                self.atualizar_status(f"🗑️ Coluna '{nome_coluna}' excluída!", 100)
+            else:
+                messagebox.showerror("Erro", f"Coluna '{nome_coluna}' não encontrada.")
+
+        except IndexError:
+            messagebox.showwarning("Aviso", "Selecione uma coluna para excluir.")
+
+    def mover_coluna_fii(self, direcao):
+        """Move uma coluna de FIIs para cima (-1) ou para baixo (1)."""
+        try:
+            item = self.tree_colunas_fiis.selection()[0]
+            valores = self.tree_colunas_fiis.item(item, "values")
+            nome_coluna = valores[0]
+
+            indice_atual = self.obter_indice_coluna_fii(nome_coluna)
+            if indice_atual == -1:
+                messagebox.showerror("Erro", f"Coluna '{nome_coluna}' não encontrada.")
+                return
+
+            novo_indice = indice_atual + direcao
+
+            if 0 <= novo_indice < len(self.config["colunas_personalizadas_fiis"]):
+                # Trocar posições
+                colunas = self.config["colunas_personalizadas_fiis"]
+                colunas[indice_atual], colunas[novo_indice] = colunas[novo_indice], colunas[indice_atual]
+
+                self.atualizar_treeview_colunas_fiis()
+
+                # Reselecionar o item movido
+                for child in self.tree_colunas_fiis.get_children():
+                    if self.tree_colunas_fiis.item(child, "values")[0] == nome_coluna:
+                        self.tree_colunas_fiis.selection_set(child)
+                        self.tree_colunas_fiis.focus(child)
+                        break
+
+                direcao_texto = "acima" if direcao == -1 else "abaixo"
+                self.atualizar_status(f"↕️ Coluna '{nome_coluna}' movida para {direcao_texto}!", 100)
+            else:
+                direcao_texto = "início" if direcao == -1 else "fim"
+                messagebox.showinfo("Informação", f"A coluna já está no {direcao_texto} da lista.")
+
+        except IndexError:
+            messagebox.showwarning("Aviso", "Selecione uma coluna para mover.")
+
+    def atualizar_treeview_colunas_fiis(self):
+        """Atualiza o Treeview de colunas personalizadas de FIIs."""
+        # Limpar itens existentes
+        for item in self.tree_colunas_fiis.get_children():
+            self.tree_colunas_fiis.delete(item)
+
+        # Repovoar com dados atualizados
+        for coluna in self.config["colunas_personalizadas_fiis"]:
+            self.tree_colunas_fiis.insert("", tk.END, values=(
+                coluna["nome"],
+                coluna["tipo"],
+                coluna.get("seletor_css", ""),
+                coluna.get("formato_excel", "Texto")
+            ))
+
+    def obter_indice_coluna_fii(self, nome_coluna):
+        """Obtém o índice de uma coluna pelo nome para FIIs."""
+        for i, coluna in enumerate(self.config["colunas_personalizadas_fiis"]):
+            if coluna["nome"] == nome_coluna:
+                return i
+        return -1
+
     def alternar_tema(self):
         """Alterna o tema entre claro e escuro."""
         self.tema_escuro = not self.tema_escuro
@@ -1238,9 +1944,9 @@ class InvestidorApp:
             messagebox.showerror("Erro", f"Erro ao salvar configurações: {str(e)}")
 
     def start_combined_extraction(self):
-        """Inicia a extração combinada de dados de ações e carteiras."""
-        if not self.config["acoes"]:
-            messagebox.showwarning("Aviso", "Nenhuma ação configurada para a extração de dados de ações. A extração de carteiras prosseguirá se possível.")
+        """Inicia a extração combinada de dados de ações, FIIs e carteiras."""
+        if not self.config["acoes"] and not self.config["fiis"]:
+            messagebox.showwarning("Aviso", "Nenhuma ação ou FII configurado para extração. A extração de carteiras prosseguirá se possível.")
 
         self.salvar_configuracoes(mostrar_mensagem=False)
 
@@ -1298,9 +2004,10 @@ class InvestidorApp:
         """
         Orquestra a lógica principal para a extração combinada de dados,
         incluindo configuração do WebDriver, login (se necessário),
-        extração de dados de ações e carteiras, e processamento/exportação dos resultados.
+        extração de dados de ações, FIIs e carteiras, e processamento/exportação dos resultados.
         """
         data_acoes_list = []
+        data_fiis_list = []
         data_carteiras_list = []
 
         try:
@@ -1331,13 +2038,19 @@ class InvestidorApp:
             if self.config.get("acoes"):
                 data_acoes_list = self.data_extractor.extract_stock_data()
             else:
-                self.atualizar_status("Nenhuma ação configurada, pulando extração de dados de ações.", 60)
+                self.atualizar_status("Nenhuma ação configurada, pulando extração de dados de ações.", 40)
 
-            # Extrair Dados de Carteiras
-            data_carteiras_list = self.data_extractor.extract_portfolio_data()
+            # Extrair Dados de FIIs
+            if self.config.get("fiis"):
+                data_fiis_list = self.data_extractor.extract_fiis_data()
+            else:
+                self.atualizar_status("Nenhum FII configurado, pulando extração de dados de FIIs.", 60)
+
+            # Extrair Dados de Carteiras (Ações e FIIs separadamente)
+            data_carteiras_acoes_list, data_carteiras_fiis_list = self.data_extractor.extract_portfolio_data()
 
             # Processar e Exportar Resultados
-            self._process_and_export_data(data_acoes_list, data_carteiras_list)
+            self._process_and_export_data(data_acoes_list, data_fiis_list, data_carteiras_acoes_list, data_carteiras_fiis_list)
 
         except Exception as e:
             # Usar after para mostrar messagebox de forma thread-safe
@@ -1355,14 +2068,16 @@ class InvestidorApp:
             # Restaurar ícone de status
             self.root.after(0, lambda: self.lbl_icone_status.config(text="ℹ️"))
 
-    def _process_and_export_data(self, data_acoes_list, data_carteiras_list):
+    def _process_and_export_data(self, data_acoes_list, data_fiis_list, data_carteiras_acoes_list, data_carteiras_fiis_list):
         """
-        Processa os dados extraídos de ações e carteiras, atualiza os DataFrames internos
+        Processa os dados extraídos de ações, FIIs e carteiras, atualiza os DataFrames internos
         e chama a função para exportar para Excel.
 
         Args:
             data_acoes_list (list): Lista de dados de ações.
-            data_carteiras_list (list): Lista de dados de carteiras.
+            data_fiis_list (list): Lista de dados de FIIs.
+            data_carteiras_acoes_list (list): Lista de dados de carteiras de ações.
+            data_carteiras_fiis_list (list): Lista de dados de carteiras de FIIs.
         """
         # Verificar se a extração foi cancelada
         if self.verificar_cancelamento():
@@ -1376,17 +2091,30 @@ class InvestidorApp:
         else:
             self.df_acoes = pd.DataFrame()
 
-        if data_carteiras_list:
-            self.df_carteiras = pd.DataFrame(data_carteiras_list)
+        if data_fiis_list:
+            self.df_fiis = pd.DataFrame(data_fiis_list)
         else:
-            self.df_carteiras = pd.DataFrame()
+            self.df_fiis = pd.DataFrame()
+
+
+
+        # Criar DataFrames separados para exportação
+        if data_carteiras_acoes_list:
+            self.df_carteiras_acoes = pd.DataFrame(data_carteiras_acoes_list)
+        else:
+            self.df_carteiras_acoes = pd.DataFrame()
+
+        if data_carteiras_fiis_list:
+            self.df_carteiras_fiis = pd.DataFrame(data_carteiras_fiis_list)
+        else:
+            self.df_carteiras_fiis = pd.DataFrame()
 
         if self.verificar_cancelamento():
             self.atualizar_status("Extração foi cancelada durante o processamento.", 0)
         else:
             self.atualizar_status("Extração combinada concluída!", 100)
 
-        if (data_acoes_list or data_carteiras_list) and not self.verificar_cancelamento():
+        if (data_acoes_list or data_fiis_list or data_carteiras_acoes_list or data_carteiras_fiis_list) and not self.verificar_cancelamento():
             # Executar exportação na thread principal
             self.root.after(0, self.exportar_excel)
         elif self.verificar_cancelamento():
@@ -1394,21 +2122,22 @@ class InvestidorApp:
             self.root.after(0, lambda: messagebox.showinfo("Extração Cancelada", "A extração foi cancelada pelo usuário."))
         else:
             # Usar after para mostrar messagebox de forma thread-safe
-            self.root.after(0, lambda: messagebox.showinfo("Extração Concluída", "Nenhum dado foi extraído (nem de ações, nem de carteiras)."))
+            self.root.after(0, lambda: messagebox.showinfo("Extração Concluída", "Nenhum dado foi extraído (nem de ações, nem de FIIs, nem de carteiras)."))
 
     def exportar_excel(self):
         """Exporta os dados para Excel usando o ExcelExporter."""
         exporter = ExcelExporter(self.config)
-        exporter.export_to_excel(self.df_acoes, self.df_carteiras)
-        
+        exporter.export_to_excel(self.df_acoes, self.df_fiis, self.df_carteiras_acoes, self.df_carteiras_fiis)
+
         # Abrir tela de visualização de dados após exportação
-        if not self.df_acoes.empty or not self.df_carteiras.empty:
+        if not self.df_acoes.empty or not self.df_fiis.empty or not self.df_carteiras_acoes.empty or not self.df_carteiras_fiis.empty:
             self.abrir_visualizador_dados()
-    
+
     def abrir_visualizador_dados(self):
         """Abre a tela de visualização de dados."""
         try:
-            viewer = DataViewer(self.root, self.df_acoes, self.df_carteiras, self.config)
+            viewer = DataViewer(self.root, self.df_acoes, self.config, self.df_fiis,
+                              self.df_carteiras_acoes, self.df_carteiras_fiis)
         except Exception as e:
             messagebox.showerror("Erro", f"Erro ao abrir visualizador de dados: {str(e)}")
 
